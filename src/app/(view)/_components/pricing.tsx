@@ -131,7 +131,7 @@ function PlanCard({ plan }: { plan: Plan }) {
           plan.ctaVariant === "dark" &&
             "bg-[#0d0d1a] text-white border border-gray-800 hover:bg-black",
           plan.ctaVariant === "ghost" &&
-            "border border-white/15 text-white hover:border-white/30 bg-white/[0.04]",
+            "border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50",
         )}
       >
         {plan.cta}
@@ -190,7 +190,7 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-5 items-start pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start pt-4 max-w-sm mx-auto md:max-w-none">
           {PLANS.map((plan) => (
             <PlanCard key={plan.name} plan={plan} />
           ))}
