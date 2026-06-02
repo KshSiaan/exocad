@@ -17,7 +17,7 @@ export default function Home() {
         <TrustedBy />
         <Features />
         <HowItWorks />
-        <Pricing />
+        {/* <Pricing /> */}
         <Testimonials />
         <CTA />
       </main>

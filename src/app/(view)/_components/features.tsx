@@ -41,9 +41,8 @@ export function Features() {
             CAD Design Needs
           </h2>
           <p className="mt-4 mx-auto text-sm leading-relaxed font-semibold text-background/60">
-            Everything Your Healthcare-Design Workflow Needs To Move Faster,
-            Stay Aligned, <br /> And Protect Sensitive Patient Data With
-            Confidence.
+            Everything Your Dental Design Workflow Needs To Move Faster, Stay
+            Aligned, <br /> And Protect Sensitive Patient Data With Confidence.
           </p>
         </div>
 

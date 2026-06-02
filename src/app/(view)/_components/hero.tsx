@@ -44,7 +44,7 @@ export function Hero() {
             <h1 className="text-[2.6rem] sm:text-5xl lg:text-7xl  text-white leading-[1.1] tracking-tight">
               Connect Dentist And
               <br />
-              Dental Lab With
+              Dental Labs With
               <br />
               CAD Designers
             </h1>
