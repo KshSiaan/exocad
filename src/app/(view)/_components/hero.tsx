@@ -44,9 +44,9 @@ export function Hero() {
             <h1 className="text-[2.6rem] sm:text-5xl lg:text-7xl  text-white leading-[1.1] tracking-tight">
               Connect Dentist
               <br />
-              And Dental Labs With
+              And Dental Labs
               <br />
-              CAD Designers
+              With CAD Designers
             </h1>
 
             <div className="flex flex-wrap gap-3">
