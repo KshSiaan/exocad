@@ -36,9 +36,9 @@ export function Features() {
             ✦ How Does It Work
           </p>
           <h2 className="text-[2rem] sm:text-4xl lg:text-[2.75rem] font-semibold text-gray-900 leading-tight">
-            Everything You Need
+            Everything Your Dental
             <br />
-            To Succeed
+            CAD Design Needs
           </h2>
           <p className="mt-4 mx-auto text-sm leading-relaxed font-semibold text-background/60">
             Everything Your Healthcare-Design Workflow Needs To Move Faster,

@@ -1,3 +1,15 @@
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import FindDesigner from "./find-designer";
+import JoinDesigner from "./join-designer";
+
 export function CTA() {
   return (
     <section
@@ -21,18 +33,44 @@ export function CTA() {
             confidence.
           </p>
           <div className="flex flex-wrap gap-3 mt-8">
-            <a
-              href="#pricing"
-              className="bg-primary rounded-full font-semibold px-6 py-2.5 text-foreground text-[13.5px] hover:bg-[#3dbdb4] transition-colors"
-            >
-              Get Started as Designer
-            </a>
-            <a
-              href="#how-it-works"
-              className="border border-white/20 rounded-full text-white font-medium px-6 py-2.5 text-[13.5px] hover:border-white/40 transition-colors bg-white/4"
-            >
-              Join as a Designer
-            </a>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="rounded-full">Find a Designer</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle className="text-3xl">
+                    Connect with a designer
+                  </DialogTitle>
+                  <DialogDescription>
+                    Connect with elite exocad designers for your dental practice
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="">
+                  <FindDesigner />
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="rounded-full">
+                  Join as a Designer
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle className="text-3xl">
+                    Join as a Designer
+                  </DialogTitle>
+                  <DialogDescription>
+                    Become part of our elite exocad designer network
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="">
+                  <JoinDesigner />
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

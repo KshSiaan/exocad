@@ -16,12 +16,12 @@ const SOCIAL = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#0f0f1f] text-white/60 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-background text-white/60 pt-16 pb-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           <div className="sm:col-span-2 lg:col-span-2">
             <p className="text-white font-bold text-lg mb-1">
-              exo<span className="text-[#4ecdc4]">connect</span>
+              exo<span className="text-primary">connect</span>
             </p>
             <p className="text-xs leading-relaxed max-w-xs mt-3">
               Secure beauty clarity text to the printing and typesetting
@@ -35,7 +35,7 @@ export function Footer() {
               />
               <button
                 type="button"
-                className="bg-[#4ecdc4] text-black text-xs font-semibold px-3 py-2 rounded-md hover:bg-[#3dbdb4] transition-colors whitespace-nowrap"
+                className="bg-primary text-black text-xs font-semibold px-3 py-2 rounded-md hover:bg-primary/80 transition-colors whitespace-nowrap"
               >
                 Subscribe
               </button>

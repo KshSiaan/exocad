@@ -120,7 +120,10 @@ export function Navbar() {
               >
                 Login
               </a>
-              <Button className="rounded-full h-10" asChild>
+              <Button
+                className="h-10 bg-white hover:bg-white/80 text-black"
+                asChild
+              >
                 <Link
                   href="#pricing"
                   onClick={(e: React.MouseEvent<HTMLAnchorElement>) =>
@@ -194,7 +197,10 @@ export function Navbar() {
               >
                 Login
               </a>
-              <Button className="rounded-full h-10 w-full" asChild>
+              <Button
+                className="bg-white hover:bg-white/80 h-10 w-full text-black"
+                asChild
+              >
                 <Link href="#pricing" onClick={(e) => scroll(e, "#pricing")}>
                   Get Started
                 </Link>

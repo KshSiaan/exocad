@@ -69,7 +69,7 @@ function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-7 flex flex-col",
+        "relative rounded-2xl p-7 flex flex-col ",
         dark
           ? "bg-white border-3 border-[#4ecdc4]/60 z-10"
           : "bg-white border border-gray-200/80",
@@ -173,7 +173,7 @@ function PlanCard({ plan }: { plan: Plan }) {
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-white py-20 lg:py-28">
+    <section id="pricing" className="bg-[#F8F6F1] py-20 lg:py-28 ">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
         <div className="text-center mb-14">
           <p className="text-[#4ecdc4] text-xs font-semibold tracking-[0.15em] uppercase mb-3">
