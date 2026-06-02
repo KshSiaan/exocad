@@ -42,9 +42,9 @@ export function Hero() {
           {/* Left */}
           <div className="space-y-7">
             <h1 className="text-[2.6rem] sm:text-5xl lg:text-7xl  text-white leading-[1.1] tracking-tight">
-              Connect Dentist And
+              Connect Dentist
               <br />
-              Dental Labs With
+              And Dental Labs With
               <br />
               CAD Designers
             </h1>
