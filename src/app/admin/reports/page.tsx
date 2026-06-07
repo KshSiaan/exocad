@@ -307,7 +307,10 @@ export default function ReportsPage() {
                     fontSize: 12,
                     color: FG,
                   }}
-                  formatter={(v: number) => [`$${v.toLocaleString()}`, ""]}
+                  formatter={(v) => [
+                    `$${((v as number) ?? 0).toLocaleString()}`,
+                    "",
+                  ]}
                 />
                 <Legend wrapperStyle={{ fontSize: 11, color: C }} />
                 <Area
@@ -361,7 +364,7 @@ export default function ReportsPage() {
                     fontSize: 12,
                     color: FG,
                   }}
-                  formatter={(v: number) => [`${v}%`, ""]}
+                  formatter={(v) => [`${(v as number) ?? 0}%`, ""]}
                 />
               </PieChart>
             </ResponsiveContainer>

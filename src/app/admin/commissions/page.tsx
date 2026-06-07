@@ -329,8 +329,8 @@ export default function CommissionsPage() {
                     fontSize: 12,
                     color: FG,
                   }}
-                  formatter={(v: number) => [
-                    `$${v.toLocaleString()}`,
+                  formatter={(v) => [
+                    `$${((v as number) ?? 0).toLocaleString()}`,
                     "Commission",
                   ]}
                 />

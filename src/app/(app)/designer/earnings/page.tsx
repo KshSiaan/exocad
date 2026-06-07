@@ -252,8 +252,8 @@ export default function DesignerEarningsPage() {
                   fontSize: 12,
                   color: "#111827",
                 }}
-                formatter={(v: number, name: string) => [
-                  `$${v}`,
+                formatter={(v, name) => [
+                  `$${v ?? 0}`,
                   name === "gross" ? "Gross" : "Net",
                 ]}
               />
