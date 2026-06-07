@@ -1,15 +1,6 @@
+import { BoxIcon, HeartPulse, Lightbulb } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { UserCircle, HeartPulse, Lightbulb, BoxIcon } from "lucide-react";
-import FindDesigner from "./find-designer";
-import JoinDesigner from "./join-designer";
 
 const PILLS = [
   {
@@ -50,45 +41,12 @@ export function Hero() {
             </h1>
 
             <div className="flex flex-wrap gap-3">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="rounded-full">Find a Designer</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-3xl">
-                      Find a Designer
-                    </DialogTitle>
-                    <DialogDescription>
-                      Connect with elite exocad designers for your dental
-                      practice
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="">
-                    <FindDesigner />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="rounded-full">
-                    Join as a Designer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-3xl">
-                      Join as a Designer
-                    </DialogTitle>
-                    <DialogDescription>
-                      Become part of our elite exocad designer network
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="">
-                    <JoinDesigner />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button className="rounded-full" asChild>
+                <Link href="/projects/new">Find a Designer</Link>
+              </Button>
+              <Button variant="outline" className="rounded-full" asChild>
+                <Link href="/auth/register?role=designer">Join as a Designer</Link>
+              </Button>
             </div>
 
             {/* <div className="flex absolute bottom-0 left-0 sm:px-6 py-6 sm:py-6 flex-col sm:flex-row gap-5 pt-2 sm:divide-x divide-foreground/50">

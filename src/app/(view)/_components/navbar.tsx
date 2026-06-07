@@ -114,22 +114,17 @@ export function Navbar() {
                 ))}
               </nav>
 
-              <a
-                href="#login"
+              <Link
+                href="/auth/login"
                 className="text-[#a0a0b8] hover:text-white text-sm font-medium px-4 py-2 transition-colors rounded-lg hover:bg-white/[0.06]"
               >
                 Login
-              </a>
+              </Link>
               <Button
                 className="h-10 bg-white hover:bg-white/80 text-black"
                 asChild
               >
-                <Link
-                  href="#pricing"
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) =>
-                    scroll(e, "#pricing")
-                  }
-                >
+                <Link href="/auth/register">
                   Get Started
                 </Link>
               </Button>

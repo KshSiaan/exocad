@@ -3,12 +3,11 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
+  ArrowLeft,
+  MapPin,
   Search,
   SlidersHorizontal,
-  MapPin,
   Star,
-  ArrowLeft,
-  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -300,9 +299,10 @@ function DesignerCard({ designer }: { designer: Designer }) {
           </p>
           <p className="text-xs text-muted-foreground">per hour</p>
         </div>
-        <Button size="lg" className="shrink-0 gap-1.5">
-          <Mail className="size-3.5" />
-          Send Email
+        <Button size="lg" className="shrink-0 gap-1.5" asChild>
+          <Link href={`/designers/${designer.id}`}>
+            View Profile
+          </Link>
         </Button>
       </div>
     </div>

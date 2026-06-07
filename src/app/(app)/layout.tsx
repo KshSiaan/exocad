@@ -1,0 +1,192 @@
+"use client";
+
+import {
+  Bell,
+  BriefcaseMedical,
+  ChevronDown,
+  DollarSign,
+  FolderOpen,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  Settings,
+  User,
+} from "lucide-react";
+import { Outfit } from "next/font/google";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+const outfit = Outfit({ subsets: ["latin"] });
+
+const DENTIST_NAV = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Projects", href: "/projects", icon: FolderOpen },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Profile", href: "/profile", icon: User },
+];
+
+const DESIGNER_NAV = [
+  { label: "Dashboard", href: "/designer/dashboard", icon: LayoutDashboard },
+  { label: "Jobs", href: "/designer/projects", icon: BriefcaseMedical },
+  { label: "Earnings", href: "/designer/earnings", icon: DollarSign },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Profile", href: "/designer/profile", icon: User },
+];
+
+function isDesignerRoute(path: string) {
+  return path.startsWith("/designer");
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isDesigner = isDesignerRoute(pathname);
+  const nav = isDesigner ? DESIGNER_NAV : DENTIST_NAV;
+
+  return (
+    <div className="portal-light min-h-screen bg-[#f0f2f5] flex">
+      {/* Sidebar */}
+      <aside className="hidden lg:flex w-60 shrink-0 flex-col bg-white border-r border-border/60 fixed top-0 bottom-0 left-0 z-30">
+        {/* Logo */}
+        <div className="px-6 py-5 border-b border-border/60">
+          <Link href="/">
+            <span
+              className={cn(
+                "text-xl font-bold text-foreground",
+                outfit.className,
+              )}
+            >
+              exo connect
+            </span>
+          </Link>
+        </div>
+
+        {/* Role badge */}
+        <div className="px-4 pt-4">
+          <div
+            className={cn(
+              "text-xs font-semibold px-3 py-1.5 rounded-lg text-center",
+              isDesigner
+                ? "bg-primary/10 text-primary"
+                : "bg-blue-50 text-blue-600",
+            )}
+          >
+            {isDesigner ? "Designer Portal" : "Practice Portal"}
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {nav.map((item) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                )}
+              >
+                <item.icon size={16} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Settings + logout */}
+        <div className="border-t border-border/60 px-3 py-3 space-y-0.5">
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+          >
+            <Settings size={16} />
+            Settings
+          </Link>
+          <Link
+            href="/auth/login"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={16} />
+            Sign Out
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
+        {/* Top bar */}
+        <header className="sticky top-0 z-20 bg-white border-b border-border/60 px-6 py-3 flex items-center justify-between">
+          <div />
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="size-9 p-0 text-muted-foreground relative"
+            >
+              <Bell size={17} />
+              <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted/60 transition-colors"
+                >
+                  <Avatar className="size-8">
+                    <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                      {isDesigner ? "SC" : "BS"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-sm font-semibold text-foreground leading-none">
+                      {isDesigner ? "Sarah Chen" : "Bright Smiles"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isDesigner ? "CAD Designer" : "Dental Practice"}
+                    </p>
+                  </div>
+                  <ChevronDown size={14} className="text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href={isDesigner ? "/designer/profile" : "/profile"}>
+                    <User size={14} className="mr-2" /> Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings size={14} className="mr-2" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-500 focus:text-red-500"
+                  asChild
+                >
+                  <Link href="/auth/login">
+                    <LogOut size={14} className="mr-2" /> Sign Out
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  );
+}

@@ -180,3 +180,67 @@
     @apply font-sans;
   }
 }
+
+/* Force light theme inside portal (app) even when html.dark is set */
+.portal-light {
+  --background: oklch(0.9700 0 0);
+  --foreground: oklch(0.2000 0 0);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.2000 0 0);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2000 0 0);
+  --primary: oklch(0.6001 0.0987 203.7435);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9400 0.0029 264.5419);
+  --secondary-foreground: oklch(0.3000 0.0263 256.8018);
+  --muted: oklch(0.9400 0.0017 247.8389);
+  --muted-foreground: oklch(0.4800 0.0234 264.3637);
+  --accent: oklch(0.9400 0.0029 264.5419);
+  --accent-foreground: oklch(0.2000 0 0);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8200 0.0058 264.5313);
+  --input: oklch(0.8200 0.0058 264.5313);
+  --ring: oklch(0.6001 0.0987 203.7435);
+  --sidebar: oklch(1.0000 0 0);
+  --sidebar-foreground: oklch(0.2000 0 0);
+  --sidebar-primary: oklch(0.6001 0.0987 203.7435);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9400 0.0029 264.5419);
+  --sidebar-accent-foreground: oklch(0.2000 0 0);
+  --sidebar-border: oklch(0.8200 0.0058 264.5313);
+  --sidebar-ring: oklch(0.6001 0.0987 203.7435);
+  color-scheme: light;
+}
+
+/* Force light theme inside admin panel even when html.dark is set */
+.admin-light {
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0.2686 0 0);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.2686 0 0);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2686 0 0);
+  --primary: oklch(0.5001 0.0987 203.7435);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9670 0.0029 264.5419);
+  --secondary-foreground: oklch(0.4461 0.0263 256.8018);
+  --muted: oklch(0.9670 0.0017 247.8389);
+  --muted-foreground: oklch(0.5510 0.0234 264.3637);
+  --accent: oklch(0.9670 0.0017 247.8389);
+  --accent-foreground: oklch(0.2686 0 0);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9000 0.0058 264.5313);
+  --input: oklch(0.9000 0.0058 264.5313);
+  --ring: oklch(0.5001 0.0987 203.7435);
+  --sidebar: oklch(0.9800 0 0);
+  --sidebar-foreground: oklch(0.2686 0 0);
+  --sidebar-primary: oklch(0.5001 0.0987 203.7435);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9400 0.0029 264.5419);
+  --sidebar-accent-foreground: oklch(0.2686 0 0);
+  --sidebar-border: oklch(0.9000 0.0058 264.5313);
+  --sidebar-ring: oklch(0.5001 0.0987 203.7435);
+  color-scheme: light;
+}
