@@ -65,8 +65,8 @@ export default function DentistPage() {
           </h1>
           <p className="mt-5 text-white/60 text-[15px] sm:text-base leading-relaxed max-w-lg">
             ExoConnect gives dentists instant access to vetted dental CAD
-            designers who specialize in Exocad and digital smile design — so
-            you can deliver better dentistry without the bottleneck.
+            designers who specialize in Exocad and digital smile design — so you
+            can deliver better dentistry without the bottleneck.
           </p>
           <div className="flex flex-wrap gap-3 mt-8">
             <Button size="lg" className="rounded-full" asChild>
@@ -110,7 +110,8 @@ export default function DentistPage() {
               We&apos;ve built a curated network of professional dental CAD
               designers who work specifically in Exocad and digital smile
               workflows. You post a case, we connect you with the right
-              designer, and you get back a design that&apos;s ready to mill.
+              designer, and you get back a design that&apos;s ready to mill or
+              print.
             </p>
           </div>
         </div>
@@ -148,7 +149,9 @@ export default function DentistPage() {
                   <h3 className="font-semibold text-gray-900 mb-2 leading-snug">
                     {title}
                   </h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{body}</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {body}
+                  </p>
                 </div>
               </div>
             ))}
@@ -170,17 +173,33 @@ export default function DentistPage() {
             </h2>
             <div className="mt-8 space-y-6">
               {[
-                { step: "01", label: "Post your case", desc: "Share scan files, case notes, and requirements directly on the platform." },
-                { step: "02", label: "Get matched", desc: "We connect you with a vetted designer who specializes in your case type." },
-                { step: "03", label: "Review & mill", desc: "Receive a manufacture-ready design, approve it, and send to your mill." },
+                {
+                  step: "01",
+                  label: "Post your case",
+                  desc: "Share scan files, case notes, and requirements directly on the platform.",
+                },
+                {
+                  step: "02",
+                  label: "Get matched",
+                  desc: "We connect you with a vetted designer who specializes in your case type.",
+                },
+                {
+                  step: "03",
+                  label: "Review & mill ",
+                  desc: "Receive a manufacture-ready design, approve it, and send to your mill or print.",
+                },
               ].map(({ step, label, desc }) => (
                 <div key={step} className="flex gap-4">
                   <span className="text-[11px] font-bold text-primary tracking-widest tabular-nums pt-0.5 shrink-0">
                     {step}
                   </span>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm mb-1">{label}</p>
-                    <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                    <p className="font-semibold text-gray-900 text-sm mb-1">
+                      {label}
+                    </p>
+                    <p className="text-gray-500 text-sm leading-relaxed">
+                      {desc}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -212,7 +231,9 @@ export default function DentistPage() {
                   className="border border-gray-100 rounded-xl p-4 text-center"
                 >
                   <p className="text-2xl font-bold text-gray-900">{stat}</p>
-                  <p className="text-gray-400 text-xs mt-1 leading-tight">{label}</p>
+                  <p className="text-gray-400 text-xs mt-1 leading-tight">
+                    {label}
+                  </p>
                 </div>
               ))}
             </div>
