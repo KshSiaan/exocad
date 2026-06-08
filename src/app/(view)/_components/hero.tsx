@@ -33,7 +33,7 @@ export function Hero() {
           {/* Left */}
           <div className="space-y-7">
             <h1 className="text-[2.6rem] sm:text-5xl lg:text-7xl  text-white leading-[1.1] tracking-tight">
-              Connect Dentist
+              Connecting Dentist
               <br />
               And Dental Labs
               <br />
@@ -45,7 +45,9 @@ export function Hero() {
                 <Link href="/projects/new">Find a Designer</Link>
               </Button>
               <Button variant="outline" className="rounded-full" asChild>
-                <Link href="/auth/register?role=designer">Join as a Designer</Link>
+                <Link href="/auth/register?role=designer">
+                  Join as a Designer
+                </Link>
               </Button>
             </div>
 
