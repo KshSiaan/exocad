@@ -3,9 +3,15 @@
 import { Outfit } from "next/font/google";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -13,9 +19,8 @@ const outfit = Outfit({
 });
 
 const NAV_LINKS = [
-  { label: "How it works?", href: "#how-it-works" },
+  { label: "How it works?", href: "/how-it-works" },
   { label: "Features", href: "#features" },
-  // { label: "Pricing", href: "#pricing" },
 ];
 
 export function Navbar() {
@@ -101,7 +106,7 @@ export function Navbar() {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={(e) => scroll(e, link.href)}
+                    // onClick={(e) => scroll(e, link.href)}
                     className={cn(
                       "relative text-sm font-medium transition-colors after:absolute after:bottom-[-3px] after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:rounded-full after:bg-white after:transition-transform after:duration-200 hover:after:scale-x-100",
                       active === link.href
@@ -113,7 +118,28 @@ export function Navbar() {
                   </a>
                 ))}
               </nav>
-
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="text-[#a0a0b8] hover:text-white"
+                  >
+                    I’m a dentist <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link href="/as/dentist">I’m a Dentist</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/as/designer">I’m a Designer</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/as/lab">I’m a Dental Lab</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link
                 href="/auth/login"
                 className="text-[#a0a0b8] hover:text-white text-sm font-medium px-4 py-2 transition-colors rounded-lg hover:bg-white/[0.06]"
@@ -124,9 +150,7 @@ export function Navbar() {
                 className="h-10 bg-white hover:bg-white/80 text-black"
                 asChild
               >
-                <Link href="/auth/register">
-                  Get Started
-                </Link>
+                <Link href="/auth/register">Get Started</Link>
               </Button>
             </div>
 
@@ -162,7 +186,7 @@ export function Navbar() {
         <div
           className={cn(
             "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
-            open ? "max-h-80 opacity-100" : "max-h-0 opacity-0",
+            open ? " opacity-100" : "max-h-0 opacity-0",
           )}
         >
           <nav className="border-t border-white/[0.07] px-6 pt-4 pb-6 flex flex-col gap-1">
@@ -184,6 +208,42 @@ export function Navbar() {
                 {link.label}
               </a>
             ))}
+
+            <Link
+              href="/as/dentist"
+              className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                active === "/as/dentist"
+                  ? "text-white bg-white/[0.08]"
+                  : "text-[#a0a0b8] hover:text-white hover:bg-white/[0.05]",
+              )}
+            >
+              I’m a Dentist
+            </Link>
+
+            <Link
+              href="/as/designer"
+              className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                active === "/as/designer"
+                  ? "text-white bg-white/[0.08]"
+                  : "text-[#a0a0b8] hover:text-white hover:bg-white/[0.05]",
+              )}
+            >
+              I’m a Designer
+            </Link>
+
+            <Link
+              href="/as/lab"
+              className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                active === "/as/lab"
+                  ? "text-white bg-white/[0.08]"
+                  : "text-[#a0a0b8] hover:text-white hover:bg-white/[0.05]",
+              )}
+            >
+              I’m a Dental Lab
+            </Link>
 
             <div className="border-t border-white/[0.07] mt-3 pt-4 flex flex-col gap-2">
               <a
