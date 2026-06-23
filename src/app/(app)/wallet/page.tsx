@@ -52,7 +52,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function WalletPage() {
   return (
-    <div className="space-y-6 ">
+    <div className="space-y-6">
       {/* Top cards */}
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Balance card */}

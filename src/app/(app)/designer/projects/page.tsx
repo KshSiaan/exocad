@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Clock, Search, X } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -181,59 +181,100 @@ export default function DesignerProjectsPage() {
         ))}
       </div>
 
-      {/* New job requests (prominent) */}
+      {/* New job requests */}
       {newJobs.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <span className="size-2 rounded-full bg-blue-500 animate-pulse" />
-            New Job Requests ({newJobs.length})
-          </h2>
-          {newJobs.map((j) => (
-            <Card
-              key={j.id}
-              className="bg-blue-50/50 border-blue-200 shadow-sm"
-            >
-              <CardContent className="p-4 flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-mono text-muted-foreground">
-                      {j.id}
-                    </span>
-                    <span
-                      className={`text-xs font-medium ${PRIORITY_STYLES[j.priority]}`}
-                    >
-                      · {j.priority}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {j.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {j.practice} · {j.type} · Due {j.due}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-sm font-bold text-foreground">
-                    {j.fee}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs text-red-500 border-red-200 hover:bg-red-50"
-                    onClick={() => setDeclined((prev) => [...prev, j.id])}
+        <Card className="bg-white border-border/60 shadow-sm overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/60">
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-blue-500 animate-pulse" />
+              <p className="text-sm font-semibold text-foreground">
+                Incoming Job Requests
+              </p>
+              <span className="text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full">
+                {newJobs.length} new
+              </span>
+            </div>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
+                {[
+                  "Job",
+                  "Practice",
+                  "Type",
+                  "Priority",
+                  "Due",
+                  "Fee",
+                  "Actions",
+                ].map((h) => (
+                  <TableHead
+                    key={h}
+                    className="text-[10px] text-center font-semibold uppercase tracking-widest text-muted-foreground first:pl-5 last:pr-5"
                   >
-                    <X size={12} className="mr-1" /> Decline
-                  </Button>
-                  <Button size="sm" className="h-8 text-xs" asChild>
-                    <Link href={`/designer/projects/${j.id}`}>
-                      <CheckCircle size={12} className="mr-1" /> Accept
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    {h}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {newJobs.map((j) => (
+                <TableRow
+                  key={j.id}
+                  className="border-border/60 hover:bg-muted/20"
+                >
+                  <TableCell className="pl-5 py-4 text-center">
+                    <p className="text-sm font-semibold text-foreground">
+                      {j.title}
+                    </p>
+                    <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                      {j.id}
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground text-center">
+                    {j.practice}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground text-center">
+                    {j.type}
+                  </TableCell>
+                  <TableCell
+                    className={`text-xs text-center font-semibold ${PRIORITY_STYLES[j.priority]}`}
+                  >
+                    {j.priority}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground text-center">
+                    {j.due}
+                  </TableCell>
+                  <TableCell className="text-sm font-bold text-foreground text-center">
+                    {j.fee}
+                  </TableCell>
+                  <TableCell className="">
+                    <div className="flex items-center gap-2 justify-center">
+                      <Link
+                        href={`/designer/projects/${j.id}/files`}
+                        className="text-xs font-medium text-primary hover:underline flex items-center gap-1 whitespace-nowrap"
+                      >
+                        Files View <ArrowRight size={11} />
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-3 text-xs text-red-500 border-red-200 hover:bg-red-50"
+                        onClick={() => setDeclined((prev) => [...prev, j.id])}
+                      >
+                        Decline
+                      </Button>
+                      <Button size="sm" className="h-7 px-3 text-xs" asChild>
+                        <Link href={`/designer/projects/${j.id}`}>Accept</Link>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
 
       {/* All jobs table */}
@@ -331,12 +372,20 @@ export default function DesignerProjectsPage() {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Link
-                    href={`/designer/projects/${j.id}`}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Open →
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/designer/projects/${j.id}`}
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                      Files View <ArrowRight size={11} />
+                    </Link>
+                    <Link
+                      href={`/designer/projects/${j.id}`}
+                      className="text-xs text-muted-foreground hover:underline"
+                    >
+                      Open →
+                    </Link>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

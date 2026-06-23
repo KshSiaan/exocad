@@ -1,346 +1,255 @@
 "use client";
 
-import {
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Star,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowRight, Briefcase, Search } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const STATS = [
-  {
-    label: "Active Jobs",
-    value: "5",
-    sub: "2 due this week",
-    icon: Clock,
-    color: "text-primary bg-primary/10",
-  },
-  {
-    label: "This Month",
-    value: "$2,840",
-    sub: "+18% vs last month",
-    icon: DollarSign,
-    color: "text-emerald-600 bg-emerald-50",
-  },
-  {
-    label: "Completed",
-    value: "247",
-    sub: "all time",
-    icon: CheckCircle,
-    color: "text-blue-600 bg-blue-50",
-  },
-  {
-    label: "Rating",
-    value: "4.9",
-    sub: "127 reviews",
-    icon: Star,
-    color: "text-amber-600 bg-amber-50",
-  },
+  { label: "Requested Jobs", value: "03" },
+  { label: "Active Jobs", value: "20" },
+  { label: "Completed Jobs", value: "12" },
+  { label: "Total Earnings", value: "$4,280" },
+  { label: "Total Withdraw", value: "$4,280" },
 ];
 
 const ACTIVE_JOBS = [
   {
-    id: "PRJ-1042",
-    title: "Full Arch Implant Bar",
-    practice: "Bright Smiles Dental",
-    type: "Implant Bar",
+    id: "ORD-12847",
+    title: "Upper Crown Restoration",
+    client: "Olivia Rhye",
+    type: "Implantology",
     status: "In Progress",
-    due: "Jun 9, 2024",
-    fee: "$145",
-    priority: "Express",
+    updated: "05/04/2024",
   },
   {
-    id: "PRJ-1044",
-    title: "Crown & Bridge ×3",
-    practice: "Premier Orthodontics",
-    type: "Crown & Bridge",
-    status: "New",
-    due: "Jun 10, 2024",
-    fee: "$95",
-    priority: "Standard",
+    id: "ORD-12847",
+    title: "Implant Supported Bridge",
+    client: "Phoenix Baker",
+    type: "Implantology",
+    status: "Revision",
+    updated: "05/04/2024",
   },
   {
-    id: "PRJ-1045",
+    id: "ORD-12847",
+    title: "Full Denture Set",
+    client: "Lana Steiner",
+    type: "Implantology",
+    status: "Revision",
+    updated: "05/04/2024",
+  },
+  {
+    id: "ORD-12847",
+    title: "Veneer Set — Anterior",
+    client: "Lana Steiner",
+    type: "Implantology",
+    status: "Submitted",
+    updated: "05/04/2024",
+  },
+];
+
+const COMPLETED_JOBS = [
+  {
+    id: "ORD-12840",
     title: "All-on-4 Framework",
-    practice: "Advanced Periodontics",
-    type: "Full Arch",
-    status: "In Progress",
-    due: "Jun 12, 2024",
-    fee: "$185",
-    priority: "Standard",
+    client: "Sarah Chen",
+    type: "Implantology",
+    status: "Paid",
+    updated: "04/28/2024",
   },
   {
-    id: "PRJ-1046",
-    title: "Implant Abutment ×2",
-    practice: "City Dental Group",
-    type: "Implants",
-    status: "Under Review",
-    due: "Jun 8, 2024",
-    fee: "$110",
-    priority: "Rush",
-  },
-  {
-    id: "PRJ-1047",
-    title: "Anterior Veneers ×4",
-    practice: "Smile Vision Clinic",
-    type: "Veneers",
-    status: "New",
-    due: "Jun 14, 2024",
-    fee: "$100",
-    priority: "Standard",
+    id: "ORD-12835",
+    title: "PFM Crown Set ×4",
+    client: "Marcus Webb",
+    type: "Crown & Bridge",
+    status: "Paid",
+    updated: "04/22/2024",
   },
 ];
 
-const STATUS_STYLES: Record<string, string> = {
-  New: "bg-blue-50 text-blue-600 border-blue-200",
-  "In Progress": "bg-primary/10 text-primary border-primary/20",
-  "Under Review": "bg-amber-50 text-amber-600 border-amber-200",
-  Revision: "bg-purple-50 text-purple-600 border-purple-200",
-};
+function StatusBadge({ status }: { status: string }) {
+  if (status === "Revision") {
+    return (
+      <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-200">
+        {status}
+      </span>
+    );
+  }
+  if (status === "In Progress") {
+    return <span className="text-xs font-medium text-amber-500">{status}</span>;
+  }
+  if (status === "Submitted" || status === "Paid") {
+    return (
+      <span className="text-xs font-medium text-emerald-600">{status}</span>
+    );
+  }
+  return (
+    <span className="text-xs font-medium text-muted-foreground">{status}</span>
+  );
+}
 
-const PRIORITY_STYLES: Record<string, string> = {
-  Rush: "bg-red-50 text-red-500 border-red-200",
-  Express: "bg-amber-50 text-amber-600 border-amber-200",
-  Standard: "bg-muted text-muted-foreground border-border",
-};
-
-const RECENT_ACTIVITY = [
-  {
-    text: "New job request from Premier Orthodontics",
-    time: "5 min ago",
-    icon: "📋",
-  },
-  {
-    text: "Payment of $145 received — PRJ-1040",
-    time: "2 hrs ago",
-    icon: "💰",
-  },
-  {
-    text: "PRJ-1039 approved by Bright Smiles Dental",
-    time: "5 hrs ago",
-    icon: "✅",
-  },
-  { text: "Revision requested on PRJ-1038", time: "Yesterday", icon: "🔄" },
+const COLS = [
+  "Project ID",
+  "Project Name",
+  "Designer",
+  "Service Type",
+  "Status",
+  "Last updated",
+  "Action",
 ];
+
+function JobsTable({
+  jobs,
+  search,
+}: {
+  jobs: typeof ACTIVE_JOBS;
+  search: string;
+}) {
+  const filtered = jobs.filter(
+    (j) =>
+      search === "" ||
+      j.title.toLowerCase().includes(search.toLowerCase()) ||
+      j.client.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  return (
+    <div className="bg-white rounded-2xl border border-border/60 overflow-hidden mt-4">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-border/60">
+            {COLS.map((col) => (
+              <TableHead
+                key={col}
+                className="px-6 text-xs text-muted-foreground font-medium"
+              >
+                {col}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filtered.map((j, i) => (
+            <TableRow key={`${j.id}-${i}`} className="border-border/60">
+              <TableCell className="px-6 py-4 font-semibold text-foreground">
+                {j.id}
+              </TableCell>
+              <TableCell className="px-6 py-4 font-medium text-foreground">
+                {j.title}
+              </TableCell>
+              <TableCell className="px-6 py-4 text-muted-foreground">
+                {j.client}
+              </TableCell>
+              <TableCell className="px-6 py-4">
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Briefcase size={13} className="shrink-0" />
+                  {j.type}
+                </span>
+              </TableCell>
+              <TableCell className="px-6 py-4">
+                <StatusBadge status={j.status} />
+              </TableCell>
+              <TableCell className="px-6 py-4 text-sm text-muted-foreground">
+                {j.updated}
+              </TableCell>
+              <TableCell className="px-6 py-4">
+                <Link
+                  href={`/designer/projects/${j.id}`}
+                  className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
+                >
+                  View <ArrowRight size={11} />
+                </Link>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function pad(n: number) {
+  return n.toString().padStart(2, "0");
+}
 
 export default function DesignerDashboardPage() {
+  const [available, setAvailable] = useState(true);
+  const [search, setSearch] = useState("");
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Good morning, Sarah
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            You have 2 new job requests and 1 case due today.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 h-9 text-xs"
-            asChild
-          >
-            <Link href="/designer/profile">Edit Availability</Link>
-          </Button>
-          <Button size="sm" className="gap-2 h-9 text-xs" asChild>
-            <Link href="/designer/projects">View All Jobs</Link>
-          </Button>
-        </div>
-      </div>
+      {/* Availability toggle */}
+      {/* <div className="flex items-center gap-2">
+        <span
+          className={`size-2 rounded-full ${available ? "bg-emerald-500" : "bg-muted-foreground"}`}
+        />
+        <span className="text-sm font-medium text-foreground">
+          {available ? "Available" : "Unavailable"}
+        </span>
+        <Switch checked={available} onCheckedChange={setAvailable} />
+      </div> */}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
         {STATS.map((s) => (
           <Card key={s.label} className="bg-white border-border/60 shadow-sm">
-            <CardContent className="p-5 flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-                <p className="text-2xl font-bold text-foreground mt-1">
-                  {s.value}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">{s.sub}</p>
-              </div>
-              <div
-                className={`size-9 rounded-xl flex items-center justify-center ${s.color}`}
-              >
-                <s.icon size={16} />
-              </div>
+            <CardContent className="p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                {s.label}
+              </p>
+              <p className="text-3xl font-bold text-foreground mt-2">
+                {s.value}
+              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Active jobs */}
-        <div className="xl:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-foreground">
-              Active Jobs
-            </h2>
-            <Link
-              href="/designer/projects"
-              className="text-xs text-primary hover:underline flex items-center gap-1"
-            >
-              View all <ArrowRight size={12} />
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {ACTIVE_JOBS.map((j) => (
-              <Card
-                key={j.id}
-                className="bg-white border-border/60 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-xs font-mono text-muted-foreground">
-                          {j.id}
-                        </span>
-                        <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded-full border ${STATUS_STYLES[j.status]}`}
-                        >
-                          {j.status}
-                        </span>
-                        <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded-full border ${PRIORITY_STYLES[j.priority]}`}
-                        >
-                          {j.priority}
-                        </span>
-                      </div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {j.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {j.practice} · {j.type} · Due {j.due}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-foreground">
-                        {j.fee}
-                      </p>
-                      <Link
-                        href={`/designer/projects/${j.id}`}
-                        className="text-xs text-primary hover:underline mt-1 block"
-                      >
-                        Open →
-                      </Link>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      {/* Jobs */}
+      <Tabs defaultValue="active">
+        <TabsList>
+          <TabsTrigger value="active">
+            Active
+            <span className="ml-1.5 text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+              {pad(ACTIVE_JOBS.length)}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed
+            <span className="ml-1.5 text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+              {pad(COMPLETED_JOBS.length)}
+            </span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Search — shared across tabs */}
+        <div className="mt-4 flex items-center gap-2 bg-white border border-border/60 rounded-xl px-4 py-2.5">
+          <Search size={15} className="text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search services..."
+            className="flex-1 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+          />
         </div>
 
-        {/* Right: earnings preview + activity */}
-        <div className="space-y-4">
-          {/* Earnings */}
-          <Card className="bg-white border-border/60 shadow-sm">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold">
-                  Earnings
-                </CardTitle>
-                <Link
-                  href="/designer/earnings"
-                  className="text-xs text-primary hover:underline"
-                >
-                  View all
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                {
-                  label: "This month",
-                  value: "$2,840",
-                  change: "+18%",
-                  positive: true,
-                },
-                {
-                  label: "Last month",
-                  value: "$2,406",
-                  change: "",
-                  positive: true,
-                },
-                {
-                  label: "Pending payout",
-                  value: "$1,120",
-                  change: "",
-                  positive: true,
-                },
-                {
-                  label: "All time",
-                  value: "$24,720",
-                  change: "",
-                  positive: true,
-                },
-              ].map((e) => (
-                <div
-                  key={e.label}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-xs text-muted-foreground">
-                    {e.label}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">
-                      {e.value}
-                    </span>
-                    {e.change && (
-                      <span className="text-[10px] text-emerald-500 flex items-center gap-0.5">
-                        <TrendingUp size={10} />
-                        {e.change}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full h-8 text-xs mt-1"
-                asChild
-              >
-                <Link href="/designer/earnings">Request Payout</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Activity */}
-          <Card className="bg-white border-border/60 shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {RECENT_ACTIVITY.map((a) => (
-                <div key={a.text} className="flex items-start gap-2.5">
-                  <span className="text-sm shrink-0 mt-0.5">{a.icon}</span>
-                  <div>
-                    <p className="text-xs text-foreground leading-snug">
-                      {a.text}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {a.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        <TabsContent value="active">
+          <JobsTable jobs={ACTIVE_JOBS} search={search} />
+        </TabsContent>
+        <TabsContent value="completed">
+          <JobsTable jobs={COMPLETED_JOBS} search={search} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

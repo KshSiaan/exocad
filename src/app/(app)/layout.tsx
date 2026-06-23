@@ -42,6 +42,7 @@ const DENTIST_NAV = [
 const DESIGNER_NAV = [
   { label: "Dashboard", href: "/designer/dashboard", icon: LayoutDashboard },
   { label: "Jobs", href: "/designer/projects", icon: BriefcaseMedical },
+  { label: "Wallet", href: "/designer/wallet", icon: Wallet },
   { label: "Earnings", href: "/designer/earnings", icon: DollarSign },
   { label: "Messages", href: "/messages", icon: MessageSquare },
   { label: "Profile", href: "/designer/profile", icon: User },

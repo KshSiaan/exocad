@@ -1,352 +1,336 @@
 "use client";
 
 import {
-  ArrowLeft,
-  CheckCircle,
-  Clock,
+  AlertTriangle,
+  CheckCircle2,
   Download,
-  Send,
+  FileText,
+  HelpCircle,
+  MessageCircle,
+  Triangle,
   Upload,
-  X,
 } from "lucide-react";
-import Link from "next/link";
 import { use, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 
-const JOB = {
+const PROJECT = {
   id: "PRJ-1042",
-  title: "Full Arch Implant Bar — Patient #2847",
-  practice: "Bright Smiles Dental",
-  dentist: "Dr. Brian Martinez",
-  type: "Implant Bar",
-  status: "Under Review",
-  priority: "Express",
-  created: "Jun 5, 2024",
-  due: "Jun 9, 2024",
-  fee: "$145",
-  software: "exocad",
-  notes:
-    "Patient is fully edentulous maxillary arch. All-on-6 protocol. Titanium bar preferred. Milled output — please optimize for CADCAM. Contact any prior to finalization. Nobel Biocare MultiUnit 17°, standard platform, gingival height ~3mm.",
-  timeline: [
-    { label: "Job Received", time: "Jun 5, 09:14 AM", done: true },
-    { label: "Accepted", time: "Jun 5, 11:30 AM", done: true },
-    { label: "Design Started", time: "Jun 6, 02:00 PM", done: true },
-    { label: "Files Uploaded", time: "Jun 7, 10:22 AM", done: true },
-    { label: "Revision Requested", time: "", done: false },
-    { label: "Final Approved", time: "", done: false },
-  ],
-  files_uploaded: [
-    {
-      name: "full_arch_bar_v1.stl",
-      size: "18.4 MB",
-      time: "Jun 7, 10:22 AM",
-      type: "STL",
-    },
-  ],
-  files_received: [
-    {
-      name: "scan_patient_2847.stl",
-      size: "32.1 MB",
-      time: "Jun 5, 09:15 AM",
-      type: "STL",
-    },
-    {
-      name: "reference_notes.pdf",
-      size: "0.8 MB",
-      time: "Jun 5, 09:15 AM",
-      type: "PDF",
-    },
-  ],
+  title: "UPPER CROWN ALIGNMENT",
+  status: "In Progress",
+  practice: {
+    name: "Bright Smiles Dental",
+    location: "New York, NY",
+    initials: "BS",
+  },
 };
+
+const PRACTICE_FILES = [
+  { name: "prescription.pdf", size: "1.1 MB" },
+  { name: "scan_patient_2847.stl", size: "32.1 MB" },
+  { name: "reference_notes.pdf", size: "0.8 MB" },
+];
 
 const MESSAGES = [
   {
-    from: "Dr. Brian Martinez",
-    initials: "DM",
-    time: "Jun 5, 09:16 AM",
-    text: "Hi Sarah! I've attached the scan files. We're using Nobel Biocare MultiUnit 17° — standard platform. Height of gingival tissues is ~3mm. Let me know if you need anything else.",
+    id: 1,
+    from: "practice",
+    text: "Please note that the marginal width should not exceed 0.5mm for this case.",
+    time: "10:14 AM",
   },
   {
-    from: "Sarah Chen",
-    initials: "SC",
-    time: "Jun 5, 11:32 AM",
-    text: "Thanks Dr. Martinez! Those specs are perfect. I'll start working on the design now and aim to have a draft ready by tomorrow morning.",
-  },
-  {
-    from: "Sarah Chen",
-    initials: "SC",
-    time: "Jun 7, 10:25 AM",
-    text: "I've uploaded version 1 of the implant bar. Please review the emergence profiles and contacts. I'm particularly happy with the anterior region. Let me know your thoughts!",
+    id: 2,
+    from: "me",
+    text: "Got it. I have reviewed the case guidelines. The alignment layout looks standard — will proceed.",
+    time: "10:30 AM",
   },
 ];
 
-const STATUS_STYLES: Record<string, string> = {
-  "In Progress": "bg-blue-50 text-blue-600 border-blue-200",
-  "Under Review": "bg-amber-50 text-amber-600 border-amber-200",
-  Revision: "bg-purple-50 text-purple-600 border-purple-200",
-  Completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
-};
+const MY_FILES = [
+  { name: "crown_alignment_v1.stl", size: "4.2 MB", time: "Today, 08:30 AM" },
+  { name: "upper_arch_scan.stl", size: "6.8 MB", time: "Yesterday, 03:15 PM" },
+];
 
-export default function DesignerJobDetailPage({
+const LIFECYCLE = [
+  {
+    label: "Work In Progress",
+    time: "Today, 09:15 AM",
+    dot: "bg-blue-500",
+    text: "text-blue-500",
+  },
+  {
+    label: "Job Accepted",
+    time: "Yesterday, 04:30 PM",
+    dot: "bg-emerald-500",
+    text: "text-emerald-500",
+  },
+  {
+    label: "Job Received",
+    time: "Yesterday, 11:00 AM",
+    dot: "bg-emerald-500",
+    text: "text-emerald-500",
+  },
+];
+
+export default function DesignerProjectDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   use(params);
   const [message, setMessage] = useState("");
-  const [newFiles, setNewFiles] = useState<string[]>([]);
+  const [myFiles, setMyFiles] = useState(MY_FILES);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/designer/projects"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={18} />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
+    <div className="-m-6 flex flex-col lg:flex-row lg:overflow-hidden lg:h-[calc(100dvh-70px)]">
+      {/* Left panel — Case Files */}
+      <div className="w-full lg:w-65 shrink-0 bg-white border-b border-border/60 lg:border-b-0 lg:border-r flex flex-col overflow-y-auto">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
+          <h2 className="text-sm font-semibold text-foreground">Case Files</h2>
+        </div>
+
+        {/* Practice card */}
+        <div className="px-4 pt-3 pb-3">
+          <div className="rounded-xl border border-border/60 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
               <span className="text-xs font-mono text-muted-foreground">
-                {JOB.id}
+                {PROJECT.id}
               </span>
-              <span
-                className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[JOB.status]}`}
-              >
-                {JOB.status}
-              </span>
-              <span className="text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2.5 py-0.5 rounded-full font-medium">
-                {JOB.priority}
+              <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-500 border border-amber-200">
+                {PROJECT.status}
               </span>
             </div>
-            <h1 className="text-xl font-bold text-foreground">{JOB.title}</h1>
+            <p className="text-sm font-bold text-primary uppercase tracking-wide">
+              {PROJECT.title}
+            </p>
+            <div className="flex items-center gap-2.5">
+              <div className="size-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                {PROJECT.practice.initials}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {PROJECT.practice.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {PROJECT.practice.location}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-        <Button
-          size="sm"
-          className="gap-2 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 shrink-0"
-        >
-          <CheckCircle size={13} />
-          Mark Ready for Review
-        </Button>
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Main column */}
-        <div className="xl:col-span-2 space-y-5">
-          {/* Files: received */}
-          <Card className="bg-white border-border/60 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">
-                Received Files (from practice)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {JOB.files_received.map((f) => (
-                <div
-                  key={f.name}
-                  className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-3 border border-border/40"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">
-                      {f.type}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {f.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {f.size} · {f.time}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="size-8 p-0 text-muted-foreground"
-                  >
-                    <Download size={14} />
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Files: uploaded by designer */}
-          <Card className="bg-white border-border/60 shadow-sm">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Your Uploaded Files</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 h-8 text-xs"
-                  onClick={() =>
-                    setNewFiles((prev) => [
-                      ...prev,
-                      `design_v${prev.length + 2}.stl`,
-                    ])
-                  }
-                >
-                  <Upload size={12} />
-                  Upload File
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {[
-                ...JOB.files_uploaded,
-                ...newFiles.map((n) => ({
-                  name: n,
-                  size: "14.2 MB",
-                  time: "Just now",
-                  type: "STL",
-                })),
-              ].map((f) => (
-                <div
-                  key={f.name}
-                  className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-3 border border-border/40"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                      {f.type}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {f.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {f.size} · {f.time}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="size-8 p-0 text-muted-foreground"
-                    >
-                      <Download size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="size-8 p-0 text-muted-foreground hover:text-red-500"
-                      onClick={() =>
-                        setNewFiles((prev) => prev.filter((n) => n !== f.name))
-                      }
-                    >
-                      <X size={14} />
-                    </Button>
+        {/* Files from practice — download only */}
+        <div className="px-4 pb-3 border-t border-border/60 pt-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            Files from Practice
+          </p>
+          <div className="space-y-2">
+            {PRACTICE_FILES.map((f, i) => (
+              <div
+                key={`${f.name}-${i}`}
+                className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <FileText size={16} className="text-rose-500 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate">
+                      {f.name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {f.size}
+                    </p>
                   </div>
                 </div>
-              ))}
-              {JOB.files_uploaded.length === 0 && newFiles.length === 0 && (
                 <button
                   type="button"
-                  className="w-full border-2 border-dashed border-border/60 rounded-xl p-8 text-center cursor-pointer hover:border-primary/40 transition-colors"
-                  onClick={() =>
-                    setNewFiles((prev) => [...prev, "design_v1.stl"])
-                  }
+                  className="text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-2"
+                  title="Download"
                 >
-                  <Upload className="size-6 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload design files
-                  </p>
+                  <Download size={13} />
                 </button>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Job info */}
-          <Card className="bg-white border-border/60 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Job Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2.5 text-sm">
-              {[
-                { label: "Practice", value: JOB.practice },
-                { label: "Dentist", value: JOB.dentist },
-                { label: "Service Type", value: JOB.type },
-                { label: "Software", value: JOB.software },
-                { label: "Created", value: JOB.created },
-                { label: "Due Date", value: JOB.due },
-                { label: "Your Fee", value: JOB.fee },
-              ].map((r) => (
-                <div
-                  key={r.label}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-muted-foreground">{r.label}</span>
-                  <span
-                    className={`font-medium text-foreground ${r.label === "Your Fee" ? "text-emerald-600 font-bold" : ""}`}
-                  >
-                    {r.value}
-                  </span>
-                </div>
-              ))}
-              <Separator />
-              <div>
-                <p className="text-muted-foreground text-xs mb-1.5">
-                  Case Notes
-                </p>
-                <p className="text-xs text-foreground leading-relaxed">
-                  {JOB.notes}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Timeline */}
-          <Card className="bg-white border-border/60 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Clock size={14} />
-                Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-0">
-                {JOB.timeline.map((t, i) => (
-                  <div
-                    key={t.label}
-                    className={`flex gap-3 ${i < JOB.timeline.length - 1 ? "pb-4" : ""} relative`}
-                  >
-                    {i < JOB.timeline.length - 1 && (
-                      <div
-                        className={`absolute left-[11px] top-5 bottom-0 w-px ${t.done ? "bg-primary/40" : "bg-border"}`}
-                      />
-                    )}
-                    <div
-                      className={`size-6 rounded-full flex items-center justify-center shrink-0 z-10 ${t.done ? "bg-primary text-primary-foreground" : "bg-muted border border-border"}`}
-                    >
-                      {t.done && <CheckCircle size={12} />}
-                    </div>
-                    <div className="pt-0.5">
-                      <p
-                        className={`text-xs font-medium ${t.done ? "text-foreground" : "text-muted-foreground"}`}
-                      >
-                        {t.label}
-                      </p>
-                      {t.time && (
-                        <p className="text-[10px] text-muted-foreground">
-                          {t.time}
-                        </p>
-                      )}
-                    </div>
+        {/* My design files */}
+        <div className="px-4 pb-3 border-t border-border/60 pt-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            Your Design Files
+          </p>
+          <div className="space-y-2 mb-3">
+            {myFiles.map((f, i) => (
+              <div
+                key={`mf-${f.name}-${i}`}
+                className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <FileText size={16} className="text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate">
+                      {f.name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {f.size} · {f.time}
+                    </p>
                   </div>
-                ))}
+                </div>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-2"
+                  title="Download"
+                >
+                  <Download size={13} />
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
+
+          {/* Upload zone */}
+          <button
+            type="button"
+            className="w-full border border-dashed border-border/60 rounded-xl px-3 py-2.5 flex items-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors"
+            onClick={() =>
+              setMyFiles((prev) => [
+                ...prev,
+                {
+                  name: `design_v${prev.length + 1}.stl`,
+                  size: "14.2 MB",
+                  time: "Just now",
+                },
+              ])
+            }
+          >
+            <div className="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+              <Upload size={14} className="text-muted-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-foreground">
+                Upload design file
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                STL, OBJ, DCM · max 50MB
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Center panel — viewer + chat */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* 3D viewer */}
+        <div className="flex-1 min-h-65 lg:min-h-0 bg-[#dde1e8] flex flex-col items-center justify-center gap-3">
+          <Triangle size={40} className="text-[#b4bac6] stroke-[1.2]" />
+          <p className="text-sm text-[#b4bac6] font-medium">
+            [3D Active Viewer Window Elements Loaded Here]
+          </p>
+        </div>
+
+        {/* Chat with practice */}
+        <div className="bg-white border-t border-border/60 flex flex-col">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border/60">
+            <MessageCircle size={15} className="text-muted-foreground" />
+            <span className="text-sm font-semibold text-foreground">
+              Practice Chat
+            </span>
+          </div>
+          <div className="px-5 py-3 space-y-3 overflow-y-auto max-h-36">
+            {MESSAGES.map((m) => (
+              <div
+                key={m.id}
+                className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[72%] rounded-2xl px-4 py-2.5 ${
+                    m.from === "me"
+                      ? "bg-teal-100 text-teal-900"
+                      : "bg-muted/50 text-foreground"
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed">{m.text}</p>
+                  <p
+                    className={`text-[10px] mt-1 ${
+                      m.from === "me"
+                        ? "text-right text-teal-600"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {m.time}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 px-5 py-3 border-t border-border/60">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Message the practice..."
+              className="flex-1 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+            />
+            <Button
+              size="sm"
+              className="h-8 px-4 text-xs bg-foreground text-background hover:bg-foreground/90"
+            >
+              Send
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel — designer actions + lifecycle */}
+      <div className="w-full lg:w-55 shrink-0 bg-white border-t border-border/60 lg:border-t-0 lg:border-l flex flex-col overflow-y-auto p-4 gap-3">
+        <Button className="w-full gap-2 text-xs! bg-emerald-500 hover:bg-emerald-600 text-white font-semibold">
+          <CheckCircle2 size={15} />
+          Submit Design
+        </Button>
+
+        <div className="grid grid-cols-1 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 gap-1 text-[11px] h-8 px-2"
+          >
+            <HelpCircle size={11} />
+            Request Clarification
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 gap-1 text-[11px] h-8 px-2 border-amber-400! text-amber-600! hover:bg-amber-50!"
+          >
+            <AlertTriangle size={11} />
+            Flag Issue
+          </Button>
+        </div>
+
+        <div className="pt-2">
+          <p className="text-sm font-semibold text-foreground mb-4">
+            Project Process Lifecycle
+          </p>
+          <div className="space-y-0">
+            {LIFECYCLE.map((item, i) => (
+              <div
+                key={item.label}
+                className={`flex gap-3 relative ${i < LIFECYCLE.length - 1 ? "pb-6" : ""}`}
+              >
+                {i < LIFECYCLE.length - 1 && (
+                  <div className="absolute left-[6px] top-4 bottom-0 w-0.5 bg-border" />
+                )}
+                <div
+                  className={`size-3.5 rounded-full shrink-0 mt-0.5 z-10 ${item.dot}`}
+                />
+                <div>
+                  <p className={`text-xs font-semibold ${item.text}`}>
+                    {item.label}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {item.time}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
