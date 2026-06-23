@@ -4,13 +4,13 @@ import {
   Bell,
   BriefcaseMedical,
   ChevronDown,
+  CreditCard,
   DollarSign,
   FolderOpen,
   LayoutDashboard,
   LogOut,
   Menu,
   MessageSquare,
-  Settings,
   User,
   Wallet,
 } from "lucide-react";
@@ -36,6 +36,7 @@ const DENTIST_NAV = [
   { label: "Projects", href: "/projects", icon: FolderOpen },
   { label: "Wallet", href: "/wallet", icon: Wallet },
   { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Subscription", href: "/billing", icon: CreditCard },
   { label: "Profile", href: "/profile", icon: User },
 ];
 
@@ -45,6 +46,7 @@ const DESIGNER_NAV = [
   { label: "Wallet", href: "/designer/wallet", icon: Wallet },
   { label: "Earnings", href: "/designer/earnings", icon: DollarSign },
   { label: "Messages", href: "/messages", icon: MessageSquare },
+  { label: "Subscription", href: "/designer/subscription", icon: CreditCard },
   { label: "Profile", href: "/designer/profile", icon: User },
 ];
 

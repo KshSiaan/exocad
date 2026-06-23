@@ -42,7 +42,9 @@ export function Hero() {
 
             <div className="flex flex-wrap gap-3">
               <Button className="rounded-full" asChild>
-                <Link href="/projects/new">Find a Designer</Link>
+                <Link href="/auth/register?role=dentist">
+                  Join as a Dentist
+                </Link>
               </Button>
               <Button variant="outline" className="rounded-full" asChild>
                 <Link href="/auth/register?role=designer">

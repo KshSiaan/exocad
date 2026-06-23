@@ -1,15 +1,35 @@
 "use client";
+
+import { useState } from "react";
 import {
-  ArrowUpRight,
+  AlertCircle,
+  Calendar,
+  Clock,
   CreditCard,
   DollarSign,
   TrendingUp,
+  UserPlus,
   Users,
-  UserX,
 } from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -19,296 +39,400 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// ── Data ──────────────────────────────────────────────────────────────────────
+
 const STATS = [
   {
-    label: "Total Designers",
-    value: "1,247",
-    change: "+12.5%",
+    label: "TOTAL USERS",
+    value: "730",
+    sub: "Dentists: 450 / Designers: 280",
     icon: Users,
-    trend: "up",
   },
   {
-    label: "Active Subscriptions",
-    value: "479",
-    change: "+8.2%",
-    icon: CreditCard,
-    trend: "up",
-  },
-  {
-    label: "Monthly Revenue",
-    value: "$47,810",
-    change: "+15.3%",
+    label: "TOTAL REVENUE",
+    value: "$125,430",
+    sub: "Gross platform volume",
     icon: DollarSign,
-    trend: "up",
   },
   {
-    label: "Banned Accounts",
-    value: "12",
-    change: "Last 30 days",
-    icon: UserX,
-    trend: "neutral",
+    label: "PLATFORM EARNINGS",
+    value: "$24,086",
+    sub: "Total commission (20% avg)",
+    icon: TrendingUp,
+  },
+  {
+    label: "ACTIVE SUBSCRIBERS",
+    value: "1,240",
+    sub: "Current monthly plans",
+    icon: CreditCard,
   },
 ];
 
-const _REVENUE_DATA = [
-  { month: "Jan", revenue: 28000, orders: 120 },
-  { month: "Feb", revenue: 32000, orders: 145 },
-  { month: "Mar", revenue: 29500, orders: 132 },
-  { month: "Apr", revenue: 38000, orders: 168 },
-  { month: "May", revenue: 41200, orders: 189 },
-  { month: "Jun", revenue: 47810, orders: 212 },
+const REVENUE_DATA = [
+  { month: "Jan", revenue: 13000, commission: 2800 },
+  { month: "Feb", revenue: 15500, commission: 3100 },
+  { month: "Mar", revenue: 14200, commission: 3400 },
+  { month: "Apr", revenue: 18000, commission: 4200 },
+  { month: "May", revenue: 22000, commission: 5100 },
+  { month: "Jun", revenue: 26500, commission: 6200 },
+  { month: "Jul", revenue: 29000, commission: 7200 },
 ];
 
-const DESIGNERS = [
+const RECENT_ACTIVITY = [
   {
+    id: 1,
+    icon: Clock,
+    title: "8 Appointments",
+    sub: "Starting at 9:00 AM",
+    type: "appointment",
+  },
+  {
+    id: 2,
+    icon: UserPlus,
+    title: "New Designer Registration",
+    sub: "Aris T. completed registration",
+    type: "registration",
+  },
+  {
+    id: 3,
+    icon: AlertCircle,
+    title: "New Dispute Opened",
+    sub: "Issue reported regarding Project #892",
+    type: "dispute",
+  },
+  {
+    id: 4,
+    icon: AlertCircle,
+    title: "New Dispute Opened",
+    sub: "Issue reported regarding Project #892",
+    type: "dispute",
+  },
+  {
+    id: 5,
+    icon: AlertCircle,
+    title: "New Dispute Opened",
+    sub: "Issue reported regarding Project #892",
+    type: "dispute",
+  },
+];
+
+const ACTIVITY_LOG = [
+  {
+    id: 1,
     initials: "SC",
     name: "Sarah Chen",
     email: "sarah.chen@example.com",
-    country: "🇺🇸",
-    plan: "Scale",
-    cases: 248,
-    status: "Active",
-    joined: "Jan 15, 2024",
+    action: "Completed project #892 — Full Arch design",
+    time: "2 min ago",
+    type: "Project Completed",
+    details:
+      "Sarah completed a full arch dental design for Bright Smiles Dental. The project was delivered on time and approved by the dentist.",
   },
   {
+    id: 2,
+    initials: "AT",
+    name: "Aris T.",
+    email: "aris.t@example.com",
+    action: "Registered as new designer",
+    time: "14 min ago",
+    type: "Registration",
+    details:
+      "Aris T. completed the designer onboarding process. Profile is pending admin verification.",
+  },
+  {
+    id: 3,
     initials: "MW",
     name: "Marcus Weber",
     email: "marcus.weber@example.com",
-    country: "🇩🇪",
-    plan: "Grow",
-    cases: 167,
-    status: "Active",
-    joined: "Feb 3, 2024",
+    action: "Opened dispute on Project #891",
+    time: "1 hr ago",
+    type: "Dispute",
+    details:
+      "Marcus raised a dispute claiming the dentist rejected revisions beyond agreed scope. Case is under review.",
   },
   {
+    id: 4,
     initials: "ER",
     name: "Elena Rodriguez",
     email: "elena.r@example.com",
-    country: "🇪🇸",
-    plan: "Launch",
-    cases: 89,
-    status: "Active",
-    joined: "Mar 12, 2024",
+    action: "Upgraded subscription to Scale plan",
+    time: "3 hr ago",
+    type: "Subscription",
+    details:
+      "Elena upgraded from Grow to Scale plan. Billing updated. New limits apply immediately.",
   },
   {
+    id: 5,
     initials: "JT",
     name: "James Thompson",
     email: "j.thompson@example.com",
-    country: "🇬🇧",
-    plan: "Scale",
-    cases: 312,
-    status: "Suspended",
-    joined: "Dec 8, 2023",
+    action: "Account suspended for ToS violation",
+    time: "5 hr ago",
+    type: "Account Action",
+    details:
+      "James Thompson's account was suspended following a confirmed Terms of Service violation. Admin review required before reinstatement.",
   },
   {
+    id: 6,
     initials: "YT",
     name: "Yuki Tanaka",
     email: "yuki.t@example.com",
-    country: "🇯🇵",
-    plan: "Grow",
-    cases: 203,
-    status: "Active",
-    joined: "Jan 28, 2024",
+    action: "Submitted 3 new orders",
+    time: "6 hr ago",
+    type: "Order",
+    details:
+      "Yuki submitted orders #2844, #2843, #2842. All pending dentist approval.",
   },
 ];
 
-const RECENT_ORDERS = [
-  {
-    id: "#ORD-2847",
-    practice: "Bright Smiles Dental",
-    designer: "Sarah Chen",
-    type: "Full Arch",
-    amount: "$380",
-    status: "Completed",
-    date: "Jun 6, 2024",
-  },
-  {
-    id: "#ORD-2846",
-    practice: "City Dental Group",
-    designer: "Marcus Weber",
-    type: "Crowns",
-    amount: "$120",
-    status: "In Progress",
-    date: "Jun 6, 2024",
-  },
-  {
-    id: "#ORD-2845",
-    practice: "Premier Orthodontics",
-    designer: "Elena Rodriguez",
-    type: "Implant Bars",
-    amount: "$290",
-    status: "Review",
-    date: "Jun 5, 2024",
-  },
-  {
-    id: "#ORD-2844",
-    practice: "Family Dental Care",
-    designer: "Yuki Tanaka",
-    type: "Veneers",
-    amount: "$180",
-    status: "Completed",
-    date: "Jun 5, 2024",
-  },
-  {
-    id: "#ORD-2843",
-    practice: "Advanced Periodontics",
-    designer: "Amara Diallo",
-    type: "Bridges",
-    amount: "$240",
-    status: "Pending",
-    date: "Jun 4, 2024",
-  },
-];
-
-const STATUS_STYLES: Record<string, string> = {
-  Active: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  Suspended: "bg-red-500/10 text-red-500 border-red-500/20",
-  Completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  "In Progress": "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  Review: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  Pending: "bg-muted text-muted-foreground border-border",
+const ACTION_BADGE: Record<string, string> = {
+  "Project Completed":
+    "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  Registration: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  Dispute: "bg-red-500/10 text-red-600 border-red-500/20",
+  Subscription: "bg-violet-500/10 text-violet-600 border-violet-500/20",
+  "Account Action": "bg-amber-500/10 text-amber-600 border-amber-500/20",
+  Order: "bg-sky-500/10 text-sky-600 border-sky-500/20",
 };
 
+// ── Component ─────────────────────────────────────────────────────────────────
+
+type ActivityEntry = (typeof ACTIVITY_LOG)[number];
+
 export default function AdminDashboardPage() {
+  const [selected, setSelected] = useState<ActivityEntry | null>(null);
+
   return (
     <div className="space-y-6">
-      {/* Stats */}
+      {/* ── Stat cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {STATS.map((stat) => (
-          <Card key={stat.label} className="bg-card border-border">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-3xl font-bold text-foreground">
-                    {stat.value}
-                  </p>
-                  {stat.trend === "up" ? (
-                    <p className="text-xs text-emerald-500 flex items-center gap-1">
-                      <TrendingUp size={11} />
-                      {stat.change}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      {stat.change}
-                    </p>
-                  )}
-                </div>
-                <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                  <stat.icon size={18} />
-                </div>
-              </div>
+        {STATS.map((s) => (
+          <Card key={s.label} className="bg-card border-border">
+            <CardContent className="p-6">
+              <p className="text-xs font-semibold tracking-widest text-muted-foreground mb-3">
+                {s.label}
+              </p>
+              <p className="text-3xl font-bold text-foreground mb-1">
+                {s.value}
+              </p>
+              <p className="text-xs text-muted-foreground">{s.sub}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Designer Management */}
+      {/* ── Chart + Recent Activity ─────────────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+        {/* Revenue chart */}
+        <Card className="bg-card border-border">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between mb-1">
+              <div>
+                <p className="text-base font-bold text-foreground tracking-wide">
+                  REVENUE ANALYTICS
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Comparing total revenue vs. platform commission
+                </p>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground pt-0.5">
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-foreground inline-block" />
+                  REVENUE
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full bg-muted-foreground inline-block" />
+                  COMMISSION
+                </span>
+              </div>
+            </div>
+            <div className="h-[280px] mt-6">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={REVENUE_DATA}
+                  margin={{ top: 4, right: 4, left: -8, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="hsl(var(--foreground))"
+                        stopOpacity={0.12}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="hsl(var(--foreground))"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: 11,
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: 11,
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                    tickFormatter={(v: number) =>
+                      v === 0 ? "0" : `${(v / 1000) * 7.5}`
+                    }
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                    formatter={(v, name) => [
+                      `$${Number(v ?? 0).toLocaleString()}`,
+                      name === "revenue" ? "Revenue" : "Commission",
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--foreground))"
+                    strokeWidth={2}
+                    fill="url(#revGrad)"
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="commission"
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 3"
+                    fill="none"
+                    dot={false}
+                    activeDot={{ r: 3 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity panel */}
+        <Card className="bg-card border-border flex flex-col">
+          <CardContent className="p-6 flex flex-col gap-4 flex-1">
+            <p className="text-base font-bold text-foreground tracking-wide">
+              RECENT ACTIVITY
+            </p>
+            <div className="flex flex-col gap-3 flex-1">
+              {RECENT_ACTIVITY.map((a) => (
+                <div key={a.id} className="flex items-start gap-3">
+                  <div className="size-9 rounded-lg bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                    <a.icon size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-tight">
+                      {a.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
+                      {a.sub}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button className="w-full mt-2 bg-foreground text-background hover:bg-foreground/90 text-sm font-medium h-10 rounded-lg">
+              <Calendar size={14} className="mr-2" />
+              View Full Calendar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Recent Activities Table ─────────────────────────────────────── */}
       <Card className="bg-card border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">
-              Designer Management
-            </CardTitle>
-            {/* <Button size="sm" className="gap-1.5 h-8 text-xs">
-              + Add Designer
-            </Button> */}
-          </div>
-          <div className="flex items-center gap-3 pt-2">
-            <div className="relative flex-1 w-full">
-              <svg
-                aria-hidden="true"
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search designers..."
-                className="w-full h-9 rounded-lg border border-border bg-muted pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <Button variant="outline" size="sm" className="h-9 gap-2 text-xs ">
-              Filter
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 gap-2 text-xs">
-              Export
-            </Button>
-          </div>
+          <CardTitle className="text-base font-semibold">
+            Recent Activities
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-0">
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="pl-6 text-xs font-medium text-muted-foreground">
-                  Designer
+                  User
                 </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">
                   Email
                 </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">
-                  Country
+                  Action
                 </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">
-                  Plan
+                  Type
                 </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">
-                  Cases
+                  Time
                 </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Status
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Join Date
+                <TableHead className="text-xs font-medium text-muted-foreground pr-6 text-right">
+                  Details
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {DESIGNERS.map((d) => (
+              {ACTIVITY_LOG.map((entry) => (
                 <TableRow
-                  key={d.email}
-                  className="border-border hover:bg-muted/40 cursor-pointer"
+                  key={entry.id}
+                  className="border-border hover:bg-muted/40"
                 >
                   <TableCell className="pl-6">
                     <div className="flex items-center gap-3">
                       <Avatar className="size-8">
                         <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-                          {d.initials}
+                          {entry.initials}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-foreground">
-                        {d.name}
+                      <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                        {entry.name}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {d.email}
+                    {entry.email}
                   </TableCell>
-                  <TableCell className="text-base">{d.country}</TableCell>
-                  <TableCell>
-                    <span className="text-xs font-medium border border-border rounded px-2 py-0.5 text-foreground">
-                      {d.plan}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground">
-                    {d.cases}
+                  <TableCell className="text-sm text-foreground max-w-[260px]">
+                    {entry.action}
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[d.status]}`}
+                      className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full border whitespace-nowrap ${ACTION_BADGE[entry.type] ?? "bg-muted text-muted-foreground border-border"}`}
                     >
-                      {d.status}
+                      {entry.type}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {d.joined}
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                    {entry.time}
+                  </TableCell>
+                  <TableCell className="pr-6 text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setSelected(entry)}
+                    >
+                      View Details
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -317,86 +441,54 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Recent Orders */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">
-              Recent Orders
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs text-primary gap-1 h-8"
-            >
-              View all <ArrowUpRight size={13} />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="px-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="pl-6 text-xs font-medium text-muted-foreground">
-                  Order
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Practice
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Designer
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Type
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Amount
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Status
-                </TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground">
-                  Date
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {RECENT_ORDERS.map((o) => (
-                <TableRow
-                  key={o.id}
-                  className="border-border hover:bg-muted/40 cursor-pointer"
+      {/* ── Detail Modal ────────────────────────────────────────────────── */}
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Activity Details</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="size-10">
+                  <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
+                    {selected.initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {selected.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {selected.email}
+                  </p>
+                </div>
+                <span
+                  className={`ml-auto inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full border ${ACTION_BADGE[selected.type] ?? "bg-muted text-muted-foreground border-border"}`}
                 >
-                  <TableCell className="pl-6 text-sm font-mono text-foreground">
-                    {o.id}
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground">
-                    {o.practice}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {o.designer}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {o.type}
-                  </TableCell>
-                  <TableCell className="text-sm font-semibold text-foreground">
-                    {o.amount}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[o.status]}`}
-                    >
-                      {o.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {o.date}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                  {selected.type}
+                </span>
+              </div>
+              <div className="rounded-lg bg-muted/50 border border-border p-4 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Action
+                </p>
+                <p className="text-sm text-foreground">{selected.action}</p>
+              </div>
+              <div className="rounded-lg bg-muted/50 border border-border p-4 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Details
+                </p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {selected.details}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">{selected.time}</p>
+            </div>
+          )}
+          <DialogFooter showCloseButton />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

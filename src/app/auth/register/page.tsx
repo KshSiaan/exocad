@@ -311,13 +311,7 @@ export default function RegisterPage() {
                     Back
                   </Button>
                   <Button className="flex-1 h-11" asChild>
-                    <Link
-                      href={
-                        role === "dentist"
-                          ? "/dashboard"
-                          : "/designer/dashboard"
-                      }
-                    >
+                    <Link href={`/subscription?role=${role}`}>
                       Create Account
                     </Link>
                   </Button>

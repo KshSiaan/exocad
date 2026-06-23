@@ -171,7 +171,9 @@ export default function DesignerProfilePage() {
               {/* Basic Profile Info */}
               <Card className="bg-white border-border/60 shadow-sm">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base">Basic Profile Info</CardTitle>
+                  <CardTitle className="text-base">
+                    Basic Profile Info
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
