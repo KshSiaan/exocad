@@ -8,9 +8,11 @@ import {
   FolderOpen,
   LayoutDashboard,
   LogOut,
+  Menu,
   MessageSquare,
   Settings,
   User,
+  Wallet,
 } from "lucide-react";
 import { Outfit } from "next/font/google";
 import Link from "next/link";
@@ -25,12 +27,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
 const DENTIST_NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/projects", icon: FolderOpen },
+  { label: "Wallet", href: "/wallet", icon: Wallet },
   { label: "Messages", href: "/messages", icon: MessageSquare },
   { label: "Profile", href: "/profile", icon: User },
 ];
@@ -109,13 +113,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Settings + logout */}
         <div className="border-t border-border/60 px-3 py-3 space-y-0.5">
-          <Link
+          {/* <Link
             href="/settings"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
           >
             <Settings size={16} />
             Settings
-          </Link>
+          </Link> */}
           <Link
             href="/auth/login"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
@@ -130,7 +134,77 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-white border-b border-border/60 px-6 py-3 flex items-center justify-between">
-          <div />
+          {/* Mobile menu */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="size-9 p-0 lg:hidden text-muted-foreground"
+              >
+                <Menu size={18} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-64 p-0 flex flex-col bg-background"
+            >
+              <div className="px-6 py-5 border-b border-border/60">
+                <span
+                  className={cn(
+                    "text-xl font-bold text-foreground",
+                    outfit.className,
+                  )}
+                >
+                  exo connect
+                </span>
+              </div>
+              <div className="px-4">
+                {/* <div
+                  className={cn(
+                    "text-xs font-semibold px-3 py-1.5 rounded-lg text-center",
+                    isDesigner
+                      ? "bg-primary/10 text-primary"
+                      : "bg-blue-50 text-blue-600",
+                  )}
+                >
+                  {isDesigner ? "Designer Portal" : "Practice Portal"}
+                </div> */}
+              </div>
+              <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+                {nav.map((item) => {
+                  const active =
+                    pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                        active
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                      )}
+                    >
+                      <item.icon size={16} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <div className="border-t border-border/60 px-3 py-3">
+                <Link
+                  href="/auth/login"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </Link>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <div className="hidden lg:block" />
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -168,9 +242,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <User size={14} className="mr-2" /> Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                   <Settings size={14} className="mr-2" /> Settings
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-500 focus:text-red-500"

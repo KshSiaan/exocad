@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  Building2,
-  Camera,
-  CreditCard,
-  Lock,
-  Mail,
-  MapPin,
-  Phone,
-  Shield,
-  User,
-} from "lucide-react";
+import { Camera, CreditCard, Lock, Mail, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,13 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const SECTIONS = [
   { id: "personal", label: "Personal Info", icon: User },
-  { id: "practice", label: "Practice", icon: Building2 },
-  { id: "billing", label: "Billing", icon: CreditCard },
+  // { id: "billing", label: "Billing", icon: CreditCard },
   { id: "security", label: "Security", icon: Lock },
 ];
 
@@ -163,75 +151,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           )}
-
-          {activeSection === "practice" && (
-            <Card className="bg-white border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Practice Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label>Practice Name</Label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      defaultValue="Bright Smiles Dental"
-                      className="pl-10 h-10"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>City</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                      <Input defaultValue="New York" className="pl-10 h-10" />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>State</Label>
-                    <Input defaultValue="NY" className="h-10" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Practice Type</Label>
-                  <Select defaultValue="general">
-                    <SelectTrigger className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "General Dentistry",
-                        "Orthodontics",
-                        "Prosthodontics",
-                        "Periodontics",
-                        "Oral Surgery",
-                      ].map((t) => (
-                        <SelectItem
-                          key={t}
-                          value={t.toLowerCase().split(" ")[0]}
-                        >
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>About / Notes for Designers</Label>
-                  <Textarea
-                    defaultValue="We're a general practice focused on aesthetic restorations and implant work. We use exocad and prefer contacts at 30–40 μm. CBCT scans provided for all implant cases."
-                    className="resize-none min-h-[100px]"
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <Button>Save Changes</Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeSection === "billing" && (
+          {/* {activeSection === "billing" && (
             <Card className="bg-white border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-base">Billing & Payment</CardTitle>
@@ -325,7 +245,7 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          )} */}
 
           {activeSection === "security" && (
             <Card className="bg-white border-border/60 shadow-sm">

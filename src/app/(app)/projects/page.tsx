@@ -141,32 +141,6 @@ export default function ProjectsPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: "Total", value: PROJECTS.length },
-          {
-            label: "Active",
-            value: PROJECTS.filter((p) => p.status === "In Progress").length,
-          },
-          {
-            label: "Awaiting Review",
-            value: PROJECTS.filter((p) => p.status === "Under Review").length,
-          },
-          {
-            label: "Completed",
-            value: PROJECTS.filter((p) => p.status === "Completed").length,
-          },
-        ].map((s) => (
-          <Card key={s.label} className="bg-white border-border/60 shadow-sm">
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{s.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card className="bg-white border-border/60 shadow-sm">
         {/* Toolbar */}
         <div className="p-4 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
