@@ -1,374 +1,256 @@
 "use client";
 
-import {
-  BookOpen,
-  CreditCard,
-  FileText,
-  Globe,
-  Save,
-  ShieldCheck,
-} from "lucide-react";
 import { useState } from "react";
+import { BookOpen, Camera, Eye, EyeOff, ShieldCheck, User } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-const TABS = [
-  { key: "general", label: "General", icon: Globe },
-  { key: "payments", label: "Payments", icon: CreditCard },
-  { key: "terms", label: "Terms & Conditions", icon: BookOpen },
-  { key: "privacypolicy", label: "Privacy Policy", icon: ShieldCheck },
-] as const;
+// ── Shared ────────────────────────────────────────────────────────────────────
 
-type Tab = (typeof TABS)[number]["key"];
-
-function SettingRow({
+function Field({
   label,
-  description,
+  htmlFor,
   children,
 }: {
   label: string;
-  description?: string;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-4">
-      <div className="space-y-0.5">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
-      </div>
-      <div className="shrink-0">{children}</div>
+    <div className="space-y-1.5">
+      <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
 
-function Input({
+function TextInput({
+  id,
   defaultValue,
   placeholder,
   type = "text",
-  className = "",
 }: {
+  id?: string;
   defaultValue?: string;
   placeholder?: string;
   type?: string;
-  className?: string;
 }) {
   return (
     <input
+      id={id}
       type={type}
       defaultValue={defaultValue}
       placeholder={placeholder}
-      className={`h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary ${className}`}
+      className="w-full h-10 rounded-lg border border-border bg-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
     />
   );
 }
 
-function GeneralSettings() {
+// ── Password field with show/hide ─────────────────────────────────────────────
+
+function PasswordInput({ id, placeholder }: { id?: string; placeholder?: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        className="w-full h-10 rounded-lg border border-border bg-muted px-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((p) => !p)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {show ? <EyeOff size={15} /> : <Eye size={15} />}
+      </button>
+    </div>
+  );
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+
+const TABS = [
+  { key: "profile", label: "Profile", icon: User },
+  { key: "terms", label: "Terms & Conditions", icon: BookOpen },
+  { key: "privacy", label: "Privacy Policy", icon: ShieldCheck },
+] as const;
+
+type Tab = (typeof TABS)[number]["key"];
+
+// ── Profile tab ───────────────────────────────────────────────────────────────
+
+function ProfileSettings() {
   return (
     <div className="space-y-6">
+      {/* Avatar + basic info */}
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-base font-semibold">
-            Platform Identity
+            Profile Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 divide-y divide-border">
-          <SettingRow
-            label="Platform Name"
-            description="Displayed across the site and emails."
-          >
-            <Input defaultValue="ExoConnect" className="w-56" />
-          </SettingRow>
-          <SettingRow
-            label="Support Email"
-            description="Receives all support inquiries."
-          >
-            <Input
-              defaultValue="support@exoconnect.io"
-              type="email"
-              className="w-64"
-            />
-          </SettingRow>
-          <SettingRow
-            label="Platform URL"
-            description="Base URL used in emails and links."
-          >
-            <Input defaultValue="https://exoconnect.io" className="w-64" />
-          </SettingRow>
-          <SettingRow
-            label="Default Language"
-            description="Language for all new user accounts."
-          >
-            <select className="h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40">
-              <option>English (US)</option>
-              <option>French</option>
-              <option>German</option>
-              <option>Spanish</option>
-            </select>
-          </SettingRow>
-          <SettingRow
-            label="Timezone"
-            description="Used for scheduling and billing dates."
-          >
-            <select className="h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-48">
-              <option>UTC</option>
-              <option>America/New_York</option>
-              <option>America/Los_Angeles</option>
-              <option>Europe/London</option>
-            </select>
-          </SettingRow>
+        <CardContent className="space-y-6">
+          {/* Avatar row */}
+          <div className="flex items-center gap-5">
+            <div className="relative">
+              <Avatar className="size-20">
+                <AvatarFallback className="text-xl font-bold bg-primary/10 text-primary">
+                  JD
+                </AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                className="absolute -bottom-1 -right-1 size-7 rounded-full bg-foreground text-background flex items-center justify-center hover:bg-foreground/80 transition-colors"
+              >
+                <Camera size={13} />
+              </button>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                John Doe
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Administrator
+              </p>
+              <button
+                type="button"
+                className="text-xs text-primary underline underline-offset-2 mt-1 hover:text-primary/80 transition-colors"
+              >
+                Change photo
+              </button>
+            </div>
+          </div>
+
+          {/* Name + email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="First Name" htmlFor="firstName">
+              <TextInput id="firstName" defaultValue="John" />
+            </Field>
+            <Field label="Last Name" htmlFor="lastName">
+              <TextInput id="lastName" defaultValue="Doe" />
+            </Field>
+            <Field label="Email Address" htmlFor="email">
+              <TextInput id="email" defaultValue="john.doe@exoconnect.io" type="email" />
+            </Field>
+            <Field label="Phone Number" htmlFor="phone">
+              <TextInput id="phone" defaultValue="+1 (555) 000-0000" />
+            </Field>
+          </div>
         </CardContent>
+        <CardFooter className="flex justify-end border-t border-border pt-4">
+          <Button>Save Profile</Button>
+        </CardFooter>
       </Card>
 
+      {/* Change password */}
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-base font-semibold">
-            Platform Features
+            Change Password
           </CardTitle>
         </CardHeader>
-        <CardContent className="divide-y divide-border">
-          {[
-            {
-              label: "Designer Marketplace",
-              description: "Allow dentists to browse and hire designers.",
-              on: true,
-            },
-            {
-              label: "Public Designer Profiles",
-              description:
-                "Show designer profiles publicly on the landing page.",
-              on: true,
-            },
-            {
-              label: "Review & Rating System",
-              description: "Dentists can rate and review completed projects.",
-              on: true,
-            },
-            {
-              label: "In-App Messaging",
-              description:
-                "Enable real-time chat between dentists and designers.",
-              on: true,
-            },
-            {
-              label: "New Designer Registration",
-              description:
-                "Allow new designers to sign up from the landing page.",
-              on: true,
-            },
-            {
-              label: "New Practice Registration",
-              description: "Allow new dental practices to register.",
-              on: true,
-            },
-          ].map((s) => (
-            <SettingRow
-              key={s.label}
-              label={s.label}
-              description={s.description}
-            >
-              <SwitchSetting defaultChecked={s.on} />
-            </SettingRow>
-          ))}
+        <CardContent className="space-y-4">
+          <Field label="Current Password" htmlFor="currentPassword">
+            <PasswordInput id="currentPassword" placeholder="Enter current password" />
+          </Field>
+          <Field label="New Password" htmlFor="newPassword">
+            <PasswordInput id="newPassword" placeholder="Enter new password" />
+          </Field>
+          <Field label="Confirm New Password" htmlFor="confirmPassword">
+            <PasswordInput id="confirmPassword" placeholder="Confirm new password" />
+          </Field>
         </CardContent>
+        <CardFooter className="flex justify-end border-t border-border pt-4">
+          <Button>Update Password</Button>
+        </CardFooter>
       </Card>
     </div>
   );
 }
 
-function SwitchSetting({ defaultChecked }: { defaultChecked: boolean }) {
-  const [checked, setChecked] = useState(defaultChecked);
-  return <Switch checked={checked} onCheckedChange={setChecked} />;
-}
-
-function PaymentSettings() {
-  return (
-    <div className="space-y-6">
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            Stripe Configuration
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 divide-y divide-border">
-          <SettingRow
-            label="Stripe Mode"
-            description="Live mode processes real payments."
-          >
-            <select className="h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground focus:outline-none w-36">
-              <option>Live Mode</option>
-              <option>Test Mode</option>
-            </select>
-          </SettingRow>
-          <SettingRow
-            label="Publishable Key"
-            description="Used on the client side."
-          >
-            <Input
-              defaultValue="pk_live_••••••••••••••••4242"
-              className="w-72"
-            />
-          </SettingRow>
-          <SettingRow
-            label="Secret Key"
-            description="Server-side key — never expose publicly."
-          >
-            <Input
-              defaultValue="sk_live_••••••••••••••••••••"
-              type="password"
-              className="w-72"
-            />
-          </SettingRow>
-          <SettingRow
-            label="Webhook Secret"
-            description="Validates Stripe webhook events."
-          >
-            <Input
-              defaultValue="whsec_••••••••••••••••••••"
-              type="password"
-              className="w-72"
-            />
-          </SettingRow>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            Commission & Payouts
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="divide-y divide-border">
-          <SettingRow
-            label="Platform Commission Rate"
-            description="Percentage taken from each completed order."
-          >
-            <div className="flex items-center gap-2">
-              <Input defaultValue="15" className="w-20 text-center" />
-              <span className="text-sm text-muted-foreground">%</span>
-            </div>
-          </SettingRow>
-          <SettingRow
-            label="Payout Schedule"
-            description="How often designer earnings are disbursed."
-          >
-            <select className="h-9 rounded-lg border border-border bg-muted px-3 text-sm text-foreground focus:outline-none w-36">
-              <option>Weekly</option>
-              <option>Bi-weekly</option>
-              <option>Monthly</option>
-            </select>
-          </SettingRow>
-          <SettingRow
-            label="Minimum Payout"
-            description="Minimum balance required to trigger a payout."
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">$</span>
-              <Input defaultValue="50" className="w-20 text-center" />
-            </div>
-          </SettingRow>
-          <SettingRow
-            label="Automatic Payouts"
-            description="Automatically disburse on schedule without manual approval."
-          >
-            <SwitchSetting defaultChecked={true} />
-          </SettingRow>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+// ── Terms tab ─────────────────────────────────────────────────────────────────
 
 function TermsSettings() {
   return (
-    <div className="space-y-6">
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">Document</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <textarea
-            defaultValue="Enter your Terms & Conditions text here..."
-            rows={14}
-            className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
-          />
-        </CardContent>
-        <CardFooter className="flex justify-end items-center">
-          <Button size="lg">Save Changes</Button>
-        </CardFooter>
-      </Card>
-    </div>
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="text-base font-semibold">
+          Terms & Conditions
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <textarea
+          defaultValue="Enter your Terms & Conditions text here..."
+          rows={16}
+          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+        />
+      </CardContent>
+      <CardFooter className="flex justify-end border-t border-border pt-4">
+        <Button>Save Changes</Button>
+      </CardFooter>
+    </Card>
   );
 }
 
-function PrivacyPolicySettings() {
+// ── Privacy tab ───────────────────────────────────────────────────────────────
+
+function PrivacySettings() {
   return (
-    <div className="space-y-6">
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">Document</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <textarea
-            defaultValue="Enter your Privacy Policy text here..."
-            rows={14}
-            className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
-          />
-        </CardContent>
-        <CardFooter className="flex justify-end items-center">
-          <Button size="lg">Save Changes</Button>
-        </CardFooter>
-      </Card>
-    </div>
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="text-base font-semibold">Privacy Policy</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <textarea
+          defaultValue="Enter your Privacy Policy text here..."
+          rows={16}
+          className="w-full rounded-lg border border-border bg-muted px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+        />
+      </CardContent>
+      <CardFooter className="flex justify-end border-t border-border pt-4">
+        <Button>Save Changes</Button>
+      </CardFooter>
+    </Card>
   );
 }
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 const TAB_CONTENT: Record<Tab, React.ReactNode> = {
-  general: <GeneralSettings />,
-  payments: <PaymentSettings />,
+  profile: <ProfileSettings />,
   terms: <TermsSettings />,
-  privacypolicy: <PrivacyPolicySettings />,
+  privacy: <PrivacySettings />,
 };
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("general");
+  const [activeTab, setActiveTab] = useState<Tab>("profile");
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure platform-wide settings, security, payments, and content.
-          </p>
-        </div>
-        <Button size="sm" className="gap-2 h-9 text-xs">
-          <Save size={13} />
-          Save Changes
-        </Button>
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Settings</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Manage your profile, terms, and privacy policy.
+        </p>
       </div>
 
       <div className="flex gap-6">
         {/* Sidebar nav */}
-        <div className="w-48 shrink-0">
+        <div className="w-52 shrink-0">
           <nav className="flex flex-col gap-1">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 type="button"
                 onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left ${
                   activeTab === t.key
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
