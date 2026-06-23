@@ -1,11 +1,10 @@
 "use client";
 
 import {
+  AlertCircle,
   BarChart3,
   Bell,
-  CircleDollarSign,
   ClipboardList,
-  CreditCard,
   FolderOpen,
   LayoutDashboard,
   LogOut,
@@ -13,6 +12,7 @@ import {
   Search,
   Settings,
   Users,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,9 +36,11 @@ const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Designers", href: "/admin/designers", icon: Users },
   { label: "Projects", href: "/admin/practices", icon: ClipboardList },
+  { label: "Disputes", href: "/admin/disputes", icon: AlertCircle },
   { label: "Messages", href: "/admin/messages", icon: MessageSquare },
   { label: "Files", href: "/admin/files", icon: FolderOpen },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
+  { label: "Wallet", href: "/admin/wallet", icon: Wallet },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
