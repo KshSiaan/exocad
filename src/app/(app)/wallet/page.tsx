@@ -87,7 +87,14 @@ export default function WalletPage() {
           </Button>
         </div>
       </div>
-
+      <div className="">
+        <h2 className="text-xl font-bold text-foreground">
+          Refund Request Table
+        </h2>
+        <p className="text-xs text-muted-foreground/50">
+          your submitted refund request with timeline
+        </p>
+      </div>
       {/* Refund history table */}
       <div className="bg-white rounded-2xl border border-border/60 overflow-hidden">
         <Table>

@@ -10,6 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 const TOTAL_EARNINGS = 4280;
 const TOTAL_WITHDRAWN = 2840;
@@ -79,7 +89,15 @@ const TRANSACTIONS = [
     date: "05/04/2024",
   },
 ];
-
+const REVENUE_DATA = [
+  { month: "Jan", revenue: 13000, commission: 2800 },
+  { month: "Feb", revenue: 15500, commission: 3100 },
+  { month: "Mar", revenue: 14200, commission: 3400 },
+  { month: "Apr", revenue: 18000, commission: 4200 },
+  { month: "May", revenue: 22000, commission: 5100 },
+  { month: "Jun", revenue: 26500, commission: 6200 },
+  { month: "Jul", revenue: 29000, commission: 7200 },
+];
 function StatusBadge({ status }: { status: string }) {
   if (status === "In Progress")
     return (
@@ -156,7 +174,109 @@ export default function DesignerEarningsPage() {
           <p className="text-sm text-muted-foreground mt-1">Total Withdrawn</p>
         </div>
       </div>
-
+      <Card className="bg-card border-border">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-1">
+            <div>
+              <p className="text-base font-bold text-foreground tracking-wide">
+                REVENUE ANALYTICS
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Comparing total revenue vs. platform commission
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground pt-0.5">
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-foreground inline-block" />
+                REVENUE
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-muted-foreground inline-block" />
+                COMMISSION
+              </span>
+            </div>
+          </div>
+          <div className="h-[280px] mt-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={REVENUE_DATA}
+                margin={{ top: 4, right: 4, left: -8, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="hsl(var(--foreground))"
+                      stopOpacity={0.12}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="hsl(var(--foreground))"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fontSize: 11,
+                    fill: "hsl(var(--muted-foreground))",
+                  }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fontSize: 11,
+                    fill: "hsl(var(--muted-foreground))",
+                  }}
+                  tickFormatter={(v: number) =>
+                    v === 0 ? "0" : `${(v / 1000) * 7.5}`
+                  }
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(var(--popover))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  formatter={(v, name) => [
+                    `$${Number(v ?? 0).toLocaleString()}`,
+                    name === "revenue" ? "Revenue" : "Commission",
+                  ]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth={2}
+                  fill="url(#revGrad)"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="commission"
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  fill="none"
+                  dot={false}
+                  activeDot={{ r: 3 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
       {/* Search + table */}
       <div className="bg-white rounded-2xl border border-border/60 overflow-hidden">
         {/* Search bar */}

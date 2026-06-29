@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -207,6 +208,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </SheetContent>
           </Sheet>
+          <div className="flex items-center text-sm font-semibold text-foreground gap-2 border border-foreground/10 rounded-lg p-2">
+            <div className="size-2 rounded-full bg-green-500"></div>Available
+            <Switch />
+          </div>
           <div className="hidden lg:block" />
           <div className="flex items-center gap-3">
             <Button
