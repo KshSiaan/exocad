@@ -1,8 +1,10 @@
 "use client";
 import {
+  AlertCircleIcon,
   DollarSign,
   Download,
   ShoppingBag,
+  StarIcon,
   TrendingUp,
   Users,
 } from "lucide-react";
@@ -163,13 +165,13 @@ const TX_STATUS: Record<string, string> = {
 
 const KPI = [
   {
-    label: "Total Revenue (YTD)",
+    label: "TOTAL REVENUE",
     value: "$216,510",
     change: "+15.3%",
     icon: DollarSign,
   },
   {
-    label: "Total Orders (YTD)",
+    label: "ACTIVE ORDERS",
     value: "966",
     change: "+12.1%",
     icon: ShoppingBag,
@@ -180,7 +182,18 @@ const KPI = [
     change: "+2.8%",
     icon: TrendingUp,
   },
-  { label: "New Users (MTD)", value: "84", change: "+20.5%", icon: Users },
+  {
+    label: "COMMISSION EARNED",
+    value: "$216,510",
+    change: "+15.3%",
+    icon: DollarSign,
+  },
+  {
+    label: "DISPUTES / REFUNDS",
+    value: "$216,510",
+    change: "4",
+    icon: AlertCircleIcon,
+  },
 ];
 
 const C = "#6b7280";
@@ -220,7 +233,7 @@ export default function ReportsPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
         {KPI.map((k) => (
           <Card key={k.label} className="bg-card border-border">
             <CardContent className="p-5">
@@ -230,8 +243,8 @@ export default function ReportsPage() {
                   <p className="text-2xl font-bold text-foreground">
                     {k.value}
                   </p>
-                  <p className="text-xs text-emerald-500 flex items-center gap-1">
-                    <TrendingUp size={10} />
+                  <p className="text-xs flex items-center gap-1">
+                    {/* <TrendingUp size={10} /> */}
                     {k.change}
                   </p>
                 </div>
@@ -273,7 +286,7 @@ export default function ReportsPage() {
                       stopOpacity={0}
                     />
                   </linearGradient>
-                  <linearGradient id="gr2" x1="0" y1="0" x2="0" y2="1">
+                  {/* <linearGradient id="gr2" x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="5%"
                       stopColor="oklch(0.5960 0.1450 163.2250)"
@@ -284,7 +297,7 @@ export default function ReportsPage() {
                       stopColor="oklch(0.5960 0.1450 163.2250)"
                       stopOpacity={0}
                     />
-                  </linearGradient>
+                  </linearGradient> */}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={BORDER} />
                 <XAxis
@@ -321,14 +334,14 @@ export default function ReportsPage() {
                   strokeWidth={2}
                   fill="url(#gr1)"
                 />
-                <Area
+                {/* <Area
                   type="monotone"
                   dataKey="commissions"
                   name="Commissions"
                   stroke="oklch(0.5960 0.1450 163.2250)"
                   strokeWidth={2}
                   fill="url(#gr2)"
-                />
+                /> */}
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -392,51 +405,11 @@ export default function ReportsPage() {
       </div>
 
       {/* Weekly orders + top designers */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">
-              Weekly Orders
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={WEEKLY}>
-                <CartesianGrid strokeDasharray="3 3" stroke={BORDER} />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 11, fill: C }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: C }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: CARD_BG,
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: "8px",
-                    fontSize: 12,
-                    color: FG,
-                  }}
-                />
-                <Bar
-                  dataKey="orders"
-                  fill="oklch(0.6001 0.0987 203.7435)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4">
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-base font-semibold">
-              Top Designers
+              Top Designers & Admin Top Rated Approvals
             </CardTitle>
           </CardHeader>
           <Table>
@@ -452,7 +425,13 @@ export default function ReportsPage() {
                   Revenue
                 </TableHead>
                 <TableHead className="text-xs font-medium text-muted-foreground">
+                  Rating
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
                   Commission
+                </TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">
+                  Action
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -471,8 +450,17 @@ export default function ReportsPage() {
                   <TableCell className="text-sm font-semibold text-foreground">
                     {d.revenue}
                   </TableCell>
+                  <TableCell className="text-sm font-semibold text-foreground text-center gap-1 flex items-center">
+                    <StarIcon className="size-4 fill-amber-400" stroke="none" />{" "}
+                    4.5
+                  </TableCell>
                   <TableCell className="text-sm text-emerald-500 font-medium">
                     {d.commission}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    <Button variant="default" className="" size="lg">
+                      Approve
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

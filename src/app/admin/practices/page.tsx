@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  BellIcon,
   CheckCircle2,
   Clock,
   Download,
@@ -28,6 +29,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const PROJECTS = [
   {
@@ -88,11 +97,17 @@ const PROJECTS = [
 ];
 
 const STATUS_CONFIG: Record<string, { className: string }> = {
-  "In Progress": { className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  "In Progress": {
+    className: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  },
   Review: { className: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
-  Completed: { className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
+  Completed: {
+    className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  },
   Pending: { className: "bg-muted text-muted-foreground border-border" },
-  Revision: { className: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
+  Revision: {
+    className: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  },
 };
 
 const PROJECT_STATUS_ICON: Record<string, React.ReactNode> = {
@@ -102,13 +117,6 @@ const PROJECT_STATUS_ICON: Record<string, React.ReactNode> = {
   Pending: <Clock size={11} className="text-muted-foreground" />,
   Revision: <RefreshCw size={11} className="text-purple-500" />,
 };
-
-const STATS = [
-  { label: "Total Projects", value: "5", sub: "+3 this month", icon: FileText },
-  { label: "In Progress", value: "1", sub: "Active now", icon: RefreshCw },
-  { label: "Pending Review", value: "1", sub: "Awaiting approval", icon: AlertCircle },
-  { label: "Completed", value: "1", sub: "This month", icon: CheckCircle2 },
-];
 
 export default function ProjectsPage() {
   const [search, setSearch] = useState("");
@@ -142,28 +150,41 @@ export default function ProjectsPage() {
           </Button>
         </div>
       </div>
-
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {STATS.map((s) => (
-          <Card key={s.label} className="bg-card border-border">
-            <CardContent className="p-5 flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{s.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{s.sub}</p>
-              </div>
-              <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                <s.icon size={18} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-between gap-4">
+          <div className="">
+            <div className="p-3 rounded-lg bg-muted">
+              <BellIcon />
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="flex gap-2 items-center-safe">
+              <h4 className="text-lg font-bold">Auto-Delete CAD Files</h4>
+              <Badge className="">Storage Save</Badge>
+            </div>
+            <Select defaultValue="item-1">
+              <SelectTrigger className="min-w-40">
+                <SelectValue placeholder="Select day limit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="item-1">20 Days</SelectItem>
+                <SelectItem value="item-2">30 Days</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground mt-1">
+              Automatically remove old project files from AWS S3 server storage
+              space to free up storage.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="bg-card border-border">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <CardTitle className="text-base font-semibold">All Projects</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              All Projects
+            </CardTitle>
             <div className="relative flex-1 max-w-sm ml-auto">
               <svg
                 aria-hidden="true"
@@ -191,34 +212,65 @@ export default function ProjectsPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="pl-6 text-xs font-medium text-muted-foreground uppercase tracking-wide">Project</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Practice</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Designer</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Type</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Files</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Amount</TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</TableHead>
+              <TableHead className="pl-6 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Project
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Practice
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Designer
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Type
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Files
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Due
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Amount
+              </TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Status
+              </TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map((p) => (
-              <TableRow key={p.id} className="border-border hover:bg-muted/40 cursor-pointer">
-                <TableCell className="pl-6 text-sm font-mono text-foreground">{p.id}</TableCell>
+              <TableRow
+                key={p.id}
+                className="border-border hover:bg-muted/40 cursor-pointer"
+              >
+                <TableCell className="pl-6 text-sm font-mono text-foreground">
+                  {p.id}
+                </TableCell>
                 <TableCell>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{p.practice}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {p.practice}
+                    </p>
                     <p className="text-xs text-muted-foreground">{p.dentist}</p>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{p.designer}</TableCell>
-                <TableCell className="text-sm text-foreground">{p.type}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {p.designer}
+                </TableCell>
+                <TableCell className="text-sm text-foreground">
+                  {p.type}
+                </TableCell>
                 <TableCell className="text-sm text-foreground">
                   {p.files} file{p.files !== 1 ? "s" : ""}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{p.due}</TableCell>
-                <TableCell className="text-sm font-semibold text-foreground">{p.amount}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {p.due}
+                </TableCell>
+                <TableCell className="text-sm font-semibold text-foreground">
+                  {p.amount}
+                </TableCell>
                 <TableCell>
                   <span
                     className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_CONFIG[p.status].className}`}

@@ -36,6 +36,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 
 const GROWTH_DATA = [
   { month: "Jan", scale: 80, grow: 140, launch: 60 },
@@ -163,111 +165,35 @@ export default function SubscriptionsPage() {
             Track all designer subscriptions, billing cycles, and MRR.
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 h-9 text-xs">
-          <Download size={13} />
-          Export
-        </Button>
+        <Badge>PAID MODE</Badge>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {KPI.map((k) => (
-          <Card key={k.label} className="bg-card border-border">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{k.label}</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {k.value}
-                  </p>
-                  <p
-                    className={`text-xs flex items-center gap-1 ${k.change.startsWith("-") && k.label !== "Churn Rate" ? "text-red-500" : "text-emerald-500"}`}
-                  >
-                    <TrendingUp size={10} />
-                    {k.change}
-                  </p>
-                </div>
-                <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                  <k.icon size={16} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="">
+        <Card>
+          <CardContent className="p-5 flex justify-between items-center">
+            <div className="">
+              <h3 className="text-lg font-semibold">
+                Paid Subscription Active
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Customers must pay to access this membership tier
+              </p>
+            </div>
+            <div className="">
+              <Switch />
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Growth chart */}
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">
-              Subscription Growth by Plan
-            </CardTitle>
-            <span className="text-xs text-muted-foreground">Last 6 months</span>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={GROWTH_DATA}>
-              <CartesianGrid strokeDasharray="3 3" stroke={BORDER} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 11, fill: C }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: C }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: CARD_BG,
-                  border: `1px solid ${BORDER}`,
-                  borderRadius: "8px",
-                  fontSize: 12,
-                  color: FG,
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: 11, color: C }} />
-              <Line
-                type="monotone"
-                dataKey="scale"
-                name="Scale"
-                stroke="oklch(0.5960 0.1450 163.2250)"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="grow"
-                name="Grow"
-                stroke="oklch(0.6001 0.0987 203.7435)"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="launch"
-                name="Launch"
-                stroke="oklch(0.4603 0.0747 203.6719)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
 
       {/* Subscriptions table */}
       <Card className="bg-card border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-semibold">
-              All Subscriptions
+              Active Plan Tiers
             </CardTitle>
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+            {/* <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
               {["All", "Active", "Past Due", "Cancelled"].map((s, i) => (
                 <button
                   key={s}
@@ -277,109 +203,37 @@ export default function SubscriptionsPage() {
                   {s}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
         </CardHeader>
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
               <TableHead className="pl-6 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Designer
+                Plan Type
               </TableHead>
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Plan
+                Plan Title
               </TableHead>
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Amount
+                Base Price
               </TableHead>
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Next Billing
+                Discount
               </TableHead>
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Payment
+                Final Price
               </TableHead>
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Since
+                Validity
               </TableHead>
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Status
+                Action
               </TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {SUBSCRIPTIONS.map((s) => (
-              <TableRow
-                key={s.email}
-                className="border-border hover:bg-muted/40 cursor-pointer"
-              >
-                <TableCell className="pl-6">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-8">
-                      <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
-                        {s.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {s.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{s.email}</p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span
-                    className={`text-xs font-semibold border rounded px-2.5 py-0.5 ${s.planColor}`}
-                  >
-                    {s.plan}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm font-semibold text-foreground">
-                  {s.amount}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {s.nextBilling}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {s.paymentMethod}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {s.since}
-                </TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_CONFIG[s.status]}`}
-                  >
-                    <span className="size-1.5 rounded-full bg-current" />
-                    {s.status}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="size-8 p-0 text-muted-foreground hover:text-foreground"
-                      >
-                        <MoreHorizontal size={15} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Change Plan</DropdownMenuItem>
-                      <DropdownMenuItem>Resend Invoice</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-500 focus:text-red-500">
-                        Cancel
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+          <TableBody></TableBody>
         </Table>
         <div className="flex items-center justify-between px-6 py-4 border-t border-border">
           <p className="text-sm text-muted-foreground">

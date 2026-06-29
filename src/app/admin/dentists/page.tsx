@@ -154,29 +154,7 @@ const TABS = [
   { label: "All", key: "all", count: 8 },
   { label: "Active", key: "Active", count: 6 },
   { label: "Suspended", key: "Suspended", count: 1 },
-  { label: "Pending", key: "Pending", count: 1 },
-];
-
-const STAT_CARDS = [
-  { label: "Total Designers", value: "8", sub: "+12 this month" },
-  {
-    label: "Active",
-    value: "6",
-    sub: "75% of total",
-    color: "text-emerald-500",
-  },
-  {
-    label: "Pending Review",
-    value: "1",
-    sub: "Awaiting approval",
-    color: "text-amber-500",
-  },
-  {
-    label: "Suspended",
-    value: "1",
-    sub: "Requires action",
-    color: "text-red-500",
-  },
+  // { label: "Pending", key: "Pending", count: 1 },
 ];
 
 export default function DesignersPage() {
@@ -197,9 +175,9 @@ export default function DesignersPage() {
       {/* Page header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Designers</h2>
+          <h2 className="text-2xl font-bold text-foreground">Dentiests</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage and monitor all registered CAD designers on the platform.
+            Manage and monitor all registered dentists on the platform.
           </p>
         </div>
         <div className="flex items-center gap-2">

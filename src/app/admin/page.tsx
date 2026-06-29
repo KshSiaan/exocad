@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ── Chart + Recent Activity ─────────────────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+      <div className="">
         {/* Revenue chart */}
         <Card className="bg-card border-border">
           <CardContent className="p-6">
@@ -325,36 +325,6 @@ export default function AdminDashboardPage() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity panel */}
-        <Card className="bg-card border-border flex flex-col">
-          <CardContent className="p-6 flex flex-col gap-4 flex-1">
-            <p className="text-base font-bold text-foreground tracking-wide">
-              RECENT ACTIVITY
-            </p>
-            <div className="flex flex-col gap-3 flex-1">
-              {RECENT_ACTIVITY.map((a) => (
-                <div key={a.id} className="flex items-start gap-3">
-                  <div className="size-9 rounded-lg bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
-                    <a.icon size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-tight">
-                      {a.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
-                      {a.sub}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button className="w-full mt-2 bg-foreground text-background hover:bg-foreground/90 text-sm font-medium h-10 rounded-lg">
-              <Calendar size={14} className="mr-2" />
-              View Full Calendar
-            </Button>
           </CardContent>
         </Card>
       </div>
