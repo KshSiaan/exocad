@@ -140,14 +140,14 @@ export default function ProjectsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2 h-9 text-xs">
+          {/* <Button variant="outline" size="sm" className="gap-2 h-9 text-xs">
             <Download size={13} />
             Export
           </Button>
           <Button size="sm" className="gap-2 h-9 text-xs">
             <Plus size={13} />
             New Project
-          </Button>
+          </Button> */}
         </div>
       </div>
       <Card>
@@ -167,8 +167,11 @@ export default function ProjectsPage() {
                 <SelectValue placeholder="Select day limit" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="item-1">5 Days</SelectItem>
+                <SelectItem value="item-1">7 Days</SelectItem>
                 <SelectItem value="item-1">20 Days</SelectItem>
                 <SelectItem value="item-2">30 Days</SelectItem>
+                <SelectItem value="item-2">60 Days</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-sm text-muted-foreground mt-1">

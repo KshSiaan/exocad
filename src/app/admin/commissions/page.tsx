@@ -235,10 +235,10 @@ export default function CommissionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2 h-9 text-xs">
+          {/* <Button variant="outline" size="sm" className="gap-2 h-9 text-xs">
             <Download size={13} />
             Export
-          </Button>
+          </Button> */}
           <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
             {["7d", "30d", "3m", "1y"].map((p, i) => (
               <button
