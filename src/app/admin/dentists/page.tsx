@@ -175,7 +175,7 @@ export default function DesignersPage() {
       {/* Page header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Dentiests</h2>
+          <h2 className="text-2xl font-bold text-foreground">Dentist</h2>
           <p className="text-sm text-muted-foreground mt-1">
             Manage and monitor all registered dentists on the platform.
           </p>

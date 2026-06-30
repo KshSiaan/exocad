@@ -41,7 +41,7 @@ const NAV_ITEMS = [
   { label: "Projects", href: "/admin/practices", icon: ClipboardList },
   { label: "Disputes", href: "/admin/disputes", icon: AlertCircle },
   { label: "Messages", href: "/admin/messages", icon: MessageSquare },
-  { label: "Files", href: "/admin/files", icon: FolderOpen },
+  // { label: "Files", href: "/admin/files", icon: FolderOpen },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
   { label: "Wallet", href: "/admin/wallet", icon: Wallet },
   { label: "Subscriptions", href: "/admin/subscriptions", icon: CoinsIcon },

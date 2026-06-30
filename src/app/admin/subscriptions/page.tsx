@@ -233,7 +233,9 @@ export default function SubscriptionsPage() {
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
-          <TableBody></TableBody>
+          <TableBody>
+            <TableCell></TableCell>
+          </TableBody>
         </Table>
         <div className="flex items-center justify-between px-6 py-4 border-t border-border">
           <p className="text-sm text-muted-foreground">

@@ -34,21 +34,105 @@ interface Request {
 }
 
 const WITHDRAWAL_REQUESTS: Request[] = [
-  { id: "ORD-12847", uid: "w1", name: "Olivia Rhye", amount: "$120.00", reason: "Olivia Rhye", status: "Approved" },
-  { id: "ORD-12847", uid: "w2", name: "Phoenix Baker", amount: "$120.00", reason: "Phoenix Baker", status: "Pending" },
-  { id: "ORD-12847", uid: "w3", name: "Lana Steiner", amount: "$120.00", reason: "Lana Steiner", status: "Rejected" },
-  { id: "ORD-12847", uid: "w4", name: "Lana Steiner", amount: "$120.00", reason: "Lana Steiner", status: "Approved" },
-  { id: "ORD-12847", uid: "w5", name: "Lana Steiner", amount: "$120.00", reason: "Lana Steiner", status: "Rejected" },
-  { id: "ORD-12847", uid: "w6", name: "Lana Steiner", amount: "$120.00", reason: "Lana Steiner", status: "Pending" },
-  { id: "ORD-12847", uid: "w7", name: "Lana Steiner", amount: "$120.00", reason: "Lana Steiner", status: "Approved" },
+  {
+    id: "ORD-12847",
+    uid: "w1",
+    name: "Olivia Rhye",
+    amount: "$120.00",
+    reason: "Olivia Rhye",
+    status: "Approved",
+  },
+  {
+    id: "ORD-12847",
+    uid: "w2",
+    name: "Phoenix Baker",
+    amount: "$120.00",
+    reason: "Phoenix Baker",
+    status: "Pending",
+  },
+  {
+    id: "ORD-12847",
+    uid: "w3",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Lana Steiner",
+    status: "Rejected",
+  },
+  {
+    id: "ORD-12847",
+    uid: "w4",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Lana Steiner",
+    status: "Approved",
+  },
+  {
+    id: "ORD-12847",
+    uid: "w5",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Lana Steiner",
+    status: "Rejected",
+  },
+  {
+    id: "ORD-12847",
+    uid: "w6",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Lana Steiner",
+    status: "Pending",
+  },
+  {
+    id: "ORD-12847",
+    uid: "w7",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Lana Steiner",
+    status: "Approved",
+  },
 ];
 
 const REFUND_REQUESTS: Request[] = [
-  { id: "ORD-12847", uid: "r1", name: "Olivia Rhye", amount: "$120.00", reason: "Incorrect design", status: "Approved" },
-  { id: "ORD-12847", uid: "r2", name: "Phoenix Baker", amount: "$120.00", reason: "Late delivery", status: "Pending" },
-  { id: "ORD-12847", uid: "r3", name: "Lana Steiner", amount: "$120.00", reason: "Quality issue", status: "Rejected" },
-  { id: "ORD-12847", uid: "r4", name: "Lana Steiner", amount: "$120.00", reason: "Wrong file", status: "Approved" },
-  { id: "ORD-12847", uid: "r5", name: "Lana Steiner", amount: "$120.00", reason: "Dispute resolved", status: "Pending" },
+  {
+    id: "ORD-12847",
+    uid: "r1",
+    name: "Olivia Rhye",
+    amount: "$120.00",
+    reason: "Incorrect design",
+    status: "Approved",
+  },
+  {
+    id: "ORD-12847",
+    uid: "r2",
+    name: "Phoenix Baker",
+    amount: "$120.00",
+    reason: "Late delivery",
+    status: "Pending",
+  },
+  {
+    id: "ORD-12847",
+    uid: "r3",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Quality issue",
+    status: "Rejected",
+  },
+  {
+    id: "ORD-12847",
+    uid: "r4",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Wrong file",
+    status: "Approved",
+  },
+  {
+    id: "ORD-12847",
+    uid: "r5",
+    name: "Lana Steiner",
+    amount: "$120.00",
+    reason: "Dispute resolved",
+    status: "Pending",
+  },
 ];
 
 const TOGGLE_COLORS: Record<RequestStatus, string> = {
@@ -96,7 +180,7 @@ function RequestTable({
   nameLabel: string;
 }) {
   const [statuses, setStatuses] = useState<Record<string, RequestStatus>>(
-    Object.fromEntries(rows.map((r) => [r.uid, r.status]))
+    Object.fromEntries(rows.map((r) => [r.uid, r.status])),
   );
 
   function approve(uid: string) {
@@ -140,7 +224,9 @@ function RequestTable({
             <TableCell className="text-sm text-muted-foreground">
               {r.amount}
             </TableCell>
-            <TableCell className="text-sm text-foreground">{r.reason}</TableCell>
+            <TableCell className="text-sm text-foreground">
+              {r.reason}
+            </TableCell>
             <TableCell>
               <StatusToggle status={statuses[r.uid]} />
             </TableCell>
@@ -181,7 +267,7 @@ export default function WalletPage() {
   const filtered = rows.filter(
     (r) =>
       r.id.toLowerCase().includes(search.toLowerCase()) ||
-      r.name.toLowerCase().includes(search.toLowerCase())
+      r.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -211,11 +297,15 @@ export default function WalletPage() {
         <ol className="space-y-2 list-none pl-0">
           <li className="flex gap-2.5 text-sm text-amber-800/80">
             <span className="font-bold text-amber-700 shrink-0">1.</span>
-            Do not go to the &apos;Payout Schedule&apos; settings in your Stripe admin dashboard. Or do not change this setting. It must be left manual.
+            Do not go to the &apos;Payout Schedule&apos; settings in your Stripe
+            admin dashboard. Or do not change this setting. It must be left
+            manual.
           </li>
           <li className="flex gap-2.5 text-sm text-amber-800/80">
             <span className="font-bold text-amber-700 shrink-0">2.</span>
-            Withdrawals cannot be made from anywhere other than your admin dashboard. Even if you make a mistake, withdrawals cannot be made from your Stripe main dashboard.
+            Withdrawals cannot be made from anywhere other than your admin
+            dashboard. Even if you make a mistake, withdrawals cannot be made
+            from your Stripe main dashboard.
           </li>
         </ol>
       </div>

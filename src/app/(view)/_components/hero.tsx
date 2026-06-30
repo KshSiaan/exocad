@@ -1,6 +1,7 @@
 import { BoxIcon, HeartPulse, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const PILLS = [
   {
@@ -22,15 +23,9 @@ const PILLS = [
 
 export function Hero() {
   return (
-    <section
-      className="relative min-h-dvh bg-[#0d0d1a] bg-cover bg-right overflow-hidden "
-      style={{
-        backgroundImage: `url('/img/header.webp')`,
-      }}
-    >
-      <div className="w-full px-6 lg:px-10 relative z-10 backdrop-brightness-50">
-        <div className="gap-10 items-center min-h-dvh py-16 pt-48">
-          {/* Left */}
+    <section className="relative min-h-dvh max-h-dvh bg-background bg-cover bg-right overflow-hidden grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 gap-6">
+      <div className="w-full px-6 lg:px-10 relative z-10 order-2 lg:order-1">
+        <div className="gap-10 items-center min-h-dvh lg:py-16 lg:pt-48">
           <div className="space-y-7">
             <h1 className="text-[2.6rem] sm:text-5xl lg:text-7xl  text-white leading-[1.1] tracking-tight">
               Connecting Dentist
@@ -52,24 +47,16 @@ export function Hero() {
                 </Link>
               </Button>
             </div>
-
-            {/* <div className="flex absolute bottom-0 left-0 sm:px-6 py-6 sm:py-6 flex-col sm:flex-row gap-5 pt-2 sm:divide-x divide-foreground/50">
-              {PILLS.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="gap-3 flex-1 px-6">
-                  <Icon size={15} className="text-foreground size-6" />
-                  <div>
-                    <p className="text-white/90 font-semibold text-nowrap">
-                      {title}
-                    </p>
-                    <p className="text-white/40 text-[11px] mt-0.5 leading-snug">
-                      {desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div> */}
           </div>
         </div>
+      </div>
+      <div className="flex justify-center items-center relative order-1 lg:order-2 mt-24 lg:mt-12">
+        <Image
+          src="/img/bwink_med_02_single_04-ezgif.com-jpg-to-webp-converter.webp"
+          className="object-contain object-center w-full h-full invert mix-blend-screen"
+          fill
+          alt="Hero Image"
+        />
       </div>
     </section>
   );
