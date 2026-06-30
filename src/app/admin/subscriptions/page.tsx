@@ -3,6 +3,7 @@ import {
   CreditCard,
   DollarSign,
   Download,
+  EditIcon,
   MoreHorizontal,
   RefreshCw,
   TrendingUp,
@@ -234,7 +235,38 @@ export default function SubscriptionsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableCell></TableCell>
+            <TableRow>
+              <TableCell className="pl-6">
+                <Badge variant="secondary">Free</Badge>
+              </TableCell>
+              <TableCell>Free Plan</TableCell>
+              <TableCell>$0.00</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>$0.00</TableCell>
+              <TableCell>1 month</TableCell>
+              <TableCell>
+                <Button variant="outline" size="sm">
+                  <EditIcon />
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="pl-6">
+                <Badge>Monthly</Badge>
+              </TableCell>
+              <TableCell>Monthly Plan</TableCell>
+              <TableCell>$9.99</TableCell>
+              <TableCell>10%</TableCell>
+              <TableCell>$9.99</TableCell>
+              <TableCell>1 month</TableCell>
+              <TableCell>
+                <Button variant="outline" size="sm">
+                  <EditIcon />
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
         <div className="flex items-center justify-between px-6 py-4 border-t border-border">
