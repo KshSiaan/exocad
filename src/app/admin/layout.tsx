@@ -46,7 +46,7 @@ const NAV_ITEMS = [
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
   { label: "Wallet", href: "/admin/wallet", icon: Wallet },
   { label: "Subscriptions", href: "/admin/subscriptions", icon: CoinsIcon },
-  { label: "Hero Banner", href: "/admin/hero", icon: ImageIcon },
+  // { label: "Hero Banner", href: "/admin/hero", icon: ImageIcon },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

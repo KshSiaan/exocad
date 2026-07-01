@@ -2,6 +2,7 @@ import { BoxIcon, HeartPulse, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { Suspense } from "react";
 
 const PILLS = [
   {
@@ -23,8 +24,8 @@ const PILLS = [
 
 export function Hero() {
   return (
-    <section className="relative min-h-dvh max-h-dvh bg-background bg-cover bg-right overflow-hidden grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 gap-6">
-      <div className="w-full px-6 lg:px-10 relative z-10 order-2 lg:order-1">
+    <section className="relative h-dvh bg-background overflow-hidden">
+      {/* <div className="w-full px-6 lg:px-10 relative z-10 order-2 lg:order-1">
         <div className="gap-10 items-center min-h-dvh lg:py-16 lg:pt-48">
           <div className="space-y-7">
             <h1 className="text-[2.6rem] sm:text-5xl lg:text-7xl  text-white leading-[1.1] tracking-tight">
@@ -57,7 +58,19 @@ export function Hero() {
           fill
           alt="Hero Image"
         />
-      </div>
+      </div> */}
+      <Suspense fallback={<div className="w-full h-full bg-background" />}>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover object-center"
+        >
+          <source src="/header.webm" type="video/webm" />
+          <source src="/header.mp4" type="video/mp4" />
+        </video>
+      </Suspense>
     </section>
   );
 }
