@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
+import GodProvider from "@/provider/god-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -39,7 +41,10 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <Suspense>{children}</Suspense>
+        <Suspense>
+          <GodProvider>{children}</GodProvider>
+          <Toaster position="top-center" />
+        </Suspense>
       </body>
     </html>
   );

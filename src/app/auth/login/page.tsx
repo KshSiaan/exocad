@@ -9,18 +9,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-
+import { useLogin } from "@/hooks/api/use-auth";
+import { toast } from "sonner";
 const outfit = Outfit({ subsets: ["latin"] });
-
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { mutate, isPending } = useLogin();
+  function Submit() {
+    mutate(
+      { email, password },
+      {
+        onSuccess: (response) => {
+          toast.success(response?.message || "Login successful!");
+        },
+        onError: (error) => {
+          toast.error(error?.message || "Login failed. Please try again.");
+        },
+      },
+    );
+  }
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left panel */}
       <div
         className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden"
-        style={{ backgroundImage: "url('/img/auth.webp')", backgroundSize: "cover", backgroundPosition: "center" }}
+        style={{
+          backgroundImage: "url('/img/auth.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
         <div className="absolute inset-0 bg-[#0a0a14]/70" />
         <Link href="/" className="relative z-10">
@@ -92,6 +111,8 @@ export default function LoginPage() {
                   type="email"
                   placeholder="you@example.com"
                   className="pl-10 h-11"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
                 />
               </div>
@@ -112,6 +133,8 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10 h-11"
                   autoComplete="current-password"
                 />
@@ -125,8 +148,15 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button className="w-full h-11" asChild>
-              <Link href="/dashboard">Sign In</Link>
+            <Button
+              className="w-full h-11"
+              onClick={(e) => {
+                e.preventDefault();
+                Submit();
+              }}
+              disabled={isPending}
+            >
+              {isPending ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 

@@ -14,14 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const STATS = [
-  { label: "Requested Jobs", value: "03" },
-  { label: "Active Jobs", value: "20" },
-  { label: "Completed Jobs", value: "12" },
-  { label: "Total Earnings", value: "$4,280" },
-  { label: "Total Withdraw", value: "$4,280" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const ACTIVE_JOBS = [
   {
@@ -182,36 +176,73 @@ function pad(n: number) {
 }
 
 export default function DesignerDashboardPage() {
-  const [available, setAvailable] = useState(true);
   const [search, setSearch] = useState("");
+  const { data, isPending } = useQuery({
+    queryKey: ["designer-stats"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        requested_jobs: number;
+        total_active_jobs: number;
+        total_completed_jobs: number;
+        total_earning: number;
+        total_payout: number;
+      };
+    }> => {
+      const res = await howl("/designer/card-info");
+      return res as any;
+    },
+  });
+  const { data: jobsData, isPending: isJobsPending } = useQuery({
+    queryKey: ["designer-stats"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        requested_jobs: number;
+        total_active_jobs: number;
+        total_completed_jobs: number;
+        total_earning: number;
+        total_payout: number;
+      };
+    }> => {
+      const res = await howl("/designer/active-jobs?per_page=12&page=1");
+      return res as any;
+    },
+  });
+
+  const STATS = [
+    { label: "Requested Jobs", value: data?.data.requested_jobs || 0 },
+    { label: "Active Jobs", value: data?.data.total_active_jobs || 0 },
+    { label: "Completed Jobs", value: data?.data.total_completed_jobs || 0 },
+    {
+      label: "Total Earnings",
+      value: `$${data?.data.total_earning?.toLocaleString() || 0}`,
+    },
+    {
+      label: "Total Withdraw",
+      value: `$${data?.data.total_payout?.toLocaleString() || 0}`,
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Availability toggle */}
-      {/* <div className="flex items-center gap-2">
-        <span
-          className={`size-2 rounded-full ${available ? "bg-emerald-500" : "bg-muted-foreground"}`}
-        />
-        <span className="text-sm font-medium text-foreground">
-          {available ? "Available" : "Unavailable"}
-        </span>
-        <Switch checked={available} onCheckedChange={setAvailable} />
-      </div> */}
-
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-        {STATS.map((s) => (
-          <Card key={s.label} className="bg-white border-border/60 shadow-sm">
-            <CardContent className="p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {s.label}
-              </p>
-              <p className="text-3xl font-bold text-foreground mt-2">
-                {s.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {!isPending &&
+          STATS.map((s) => (
+            <Card key={s.label} className="bg-white border-border/60 shadow-sm">
+              <CardContent className="p-5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  {s.label}
+                </p>
+                <p className="text-3xl font-bold text-foreground mt-2">
+                  {s.value}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
       </div>
 
       {/* Jobs */}

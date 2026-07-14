@@ -13,6 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { howl } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 const JOBS = [
   {
@@ -117,20 +120,56 @@ export default function DesignerProjectsPage() {
   const [tab, setTab] = useState("All");
   const [search, setSearch] = useState("");
   const [declined, setDeclined] = useState<string[]>([]);
-
-  const filtered = JOBS.filter((j) => {
-    if (declined.includes(j.id)) return false;
-    const matchTab = tab === "All" || j.status === tab;
-    const matchSearch =
-      !search ||
-      j.title.toLowerCase().includes(search.toLowerCase()) ||
-      j.practice.toLowerCase().includes(search.toLowerCase());
-    return matchTab && matchSearch;
+  const { data: jobsData, isPending: isJobsPending } = useQuery({
+    queryKey: ["designer-job_requests"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        current_page: number;
+        data: Array<{
+          id: number;
+          project_number: string;
+          dentist_id: number;
+          project_title: string;
+          project_description: string;
+          designer_id: number;
+          service_name: string;
+          service_price: string;
+          project_status: string;
+          project_status_changed_at: string;
+          payment_status: string;
+          dentist_scan_files: Array<string>;
+          designer_submitted_files: any;
+          designer_payout_status: any;
+          comments: any;
+          payment_type: string;
+          created_at: string;
+          updated_at: string;
+          deleted_at: any;
+        }>;
+        first_page_url: string;
+        from: number;
+        last_page: number;
+        last_page_url: string;
+        links: Array<{
+          url?: string;
+          label: string;
+          page?: number;
+          active: boolean;
+        }>;
+        next_page_url: any;
+        path: string;
+        per_page: number;
+        prev_page_url: any;
+        to: number;
+        total: number;
+      };
+    }> => {
+      const res = await howl("/designer/get-job-requests?per_page=12&page=1");
+      return res as any;
+    },
   });
-
-  const newJobs = JOBS.filter(
-    (j) => j.status === "New" && !declined.includes(j.id),
-  );
 
   return (
     <div className="space-y-6">
@@ -142,17 +181,17 @@ export default function DesignerProjectsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
             label: "New Requests",
-            value: JOBS.filter((j) => j.status === "New").length,
+            value: jobsData?.data?.total || 0,
             icon: Clock,
             color: "text-blue-600",
           },
           {
             label: "Active",
-            value: JOBS.filter((j) => j.status === "In Progress").length,
+            value: jobsData?.data?.total || 0,
             icon: Clock,
             color: "text-primary",
           },
@@ -179,10 +218,10 @@ export default function DesignerProjectsPage() {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </div> */}
 
       {/* New job requests */}
-      {newJobs.length > 0 && (
+      {
         <Card className="bg-white border-border/60 shadow-sm overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/60">
@@ -192,7 +231,7 @@ export default function DesignerProjectsPage() {
                 Incoming Job Requests
               </p>
               <span className="text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full">
-                {newJobs.length} new
+                {jobsData?.data?.total} new
               </span>
             </div>
           </div>
@@ -200,54 +239,43 @@ export default function DesignerProjectsPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
-                {[
-                  "Job",
-                  "Practice",
-                  "Type",
-                  "Priority",
-                  "Due",
-                  "Fee",
-                  "Actions",
-                ].map((h) => (
-                  <TableHead
-                    key={h}
-                    className="text-[10px] text-center font-semibold uppercase tracking-widest text-muted-foreground first:pl-5 last:pr-5"
-                  >
-                    {h}
-                  </TableHead>
-                ))}
+                {["Job", "Practice", "Priority", "Due", "Fee", "Actions"].map(
+                  (h) => (
+                    <TableHead
+                      key={h}
+                      className="text-[10px] text-center font-semibold uppercase tracking-widest text-muted-foreground first:pl-5 last:pr-5"
+                    >
+                      {h}
+                    </TableHead>
+                  ),
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {newJobs.map((j) => (
+              {jobsData?.data?.data.map((j) => (
                 <TableRow
                   key={j.id}
                   className="border-border/60 hover:bg-muted/20"
                 >
                   <TableCell className="pl-5 py-4 text-center">
                     <p className="text-sm font-semibold text-foreground">
-                      {j.title}
+                      {j.project_title}
                     </p>
                     <p className="text-xs font-mono text-muted-foreground mt-0.5">
-                      {j.id}
+                      #{j.id}
                     </p>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground text-center">
-                    {j.practice}
+                    {j.service_name}
+                  </TableCell>
+                  <TableCell className={`text-xs text-center font-semibold`}>
+                    <Badge>{j.project_status}</Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground text-center">
-                    {j.type}
-                  </TableCell>
-                  <TableCell
-                    className={`text-xs text-center font-semibold ${PRIORITY_STYLES[j.priority]}`}
-                  >
-                    {j.priority}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground text-center">
-                    {j.due}
+                    {j.payment_status}
                   </TableCell>
                   <TableCell className="text-sm font-bold text-foreground text-center">
-                    {j.fee}
+                    {j.service_price}
                   </TableCell>
                   <TableCell className="">
                     <div className="flex items-center gap-2 justify-center">
@@ -261,7 +289,7 @@ export default function DesignerProjectsPage() {
                         variant="outline"
                         size="sm"
                         className="h-7 px-3 text-xs text-red-500 border-red-200 hover:bg-red-50"
-                        onClick={() => setDeclined((prev) => [...prev, j.id])}
+                        // onClick={() => setDeclined((prev) => [...prev, j.id])}
                       >
                         Decline
                       </Button>
@@ -275,7 +303,7 @@ export default function DesignerProjectsPage() {
             </TableBody>
           </Table>
         </Card>
-      )}
+      }
 
       {/* All jobs table */}
       <Card className="bg-white border-border/60 shadow-sm">
@@ -333,7 +361,7 @@ export default function DesignerProjectsPage() {
               ))}
             </TableRow>
           </TableHeader>
-          <TableBody>
+          {/* <TableBody>
             {filtered.map((j) => (
               <TableRow
                 key={j.id}
@@ -389,12 +417,13 @@ export default function DesignerProjectsPage() {
                 </TableCell>
               </TableRow>
             ))}
-          </TableBody>
+          </TableBody> */}
         </Table>
 
         <div className="px-6 py-4 border-t border-border/60">
           <p className="text-sm text-muted-foreground">
-            Showing {filtered.length} of {JOBS.length - declined.length} jobs
+            Showing {jobsData?.data?.current_page} of {jobsData?.data?.total}{" "}
+            jobs
           </p>
         </div>
       </Card>
