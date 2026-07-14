@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowRight, CheckCircle, Clock, Search, X } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle,
+  Clock,
+  DownloadIcon,
+  Search,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +20,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { howl } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { base_url, howl } from "@/lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Image from "next/image";
+import { toast } from "sonner";
+import ViewJob from "./view-job";
+import ActionJobReq from "./action-job-req";
 
 const JOBS = [
   {
@@ -100,27 +118,14 @@ const JOBS = [
   },
 ];
 
-const STATUS_STYLES: Record<string, string> = {
-  New: "bg-blue-50 text-blue-600 border-blue-200",
-  "In Progress": "bg-primary/10 text-primary border-primary/20",
-  "Under Review": "bg-amber-50 text-amber-600 border-amber-200",
-  Revision: "bg-purple-50 text-purple-600 border-purple-200",
-  Completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
-};
-
-const PRIORITY_STYLES: Record<string, string> = {
-  Rush: "text-red-500",
-  Express: "text-amber-600",
-  Standard: "text-muted-foreground",
-};
-
-const TABS = ["All", "New", "In Progress", "Under Review", "Completed"];
-
 export default function DesignerProjectsPage() {
-  const [tab, setTab] = useState("All");
+  const [tab, setTab] = useState("in_progress");
   const [search, setSearch] = useState("");
-  const [declined, setDeclined] = useState<string[]>([]);
-  const { data: jobsData, isPending: isJobsPending } = useQuery({
+  const {
+    data: jobsData,
+    isPending: isJobsPending,
+    refetch,
+  } = useQuery({
     queryKey: ["designer-job_requests"],
     queryFn: async (): Promise<{
       status: boolean;
@@ -170,6 +175,58 @@ export default function DesignerProjectsPage() {
       return res as any;
     },
   });
+  const { data: workingJobsData, refetch: refetchWorkingJobs } = useQuery({
+    queryKey: ["designer-jobs", tab, search],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        current_page: number;
+        data: Array<{
+          id: number;
+          project_number: string;
+          dentist_id: number;
+          project_title: string;
+          project_description: string;
+          designer_id: number;
+          service_name: string;
+          service_price: string;
+          project_status: string;
+          project_status_changed_at: string;
+          payment_status: string;
+          dentist_scan_files: Array<string>;
+          designer_submitted_files: any;
+          designer_payout_status: any;
+          comments: any;
+          payment_type: string;
+          created_at: string;
+          updated_at: string;
+          deleted_at: any;
+        }>;
+        first_page_url: string;
+        from: number;
+        last_page: number;
+        last_page_url: string;
+        links: Array<{
+          url?: string;
+          label: string;
+          page?: number;
+          active: boolean;
+        }>;
+        next_page_url: any;
+        path: string;
+        per_page: number;
+        prev_page_url: any;
+        to: number;
+        total: number;
+      };
+    }> => {
+      const res = await howl(
+        `/designer/get-jobs?per_page=12&page=1&project_status=${tab}&search=${search}`,
+      );
+      return res as any;
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -179,46 +236,6 @@ export default function DesignerProjectsPage() {
           Manage all your incoming and active design jobs.
         </p>
       </div>
-
-      {/* Stats */}
-      {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          {
-            label: "New Requests",
-            value: jobsData?.data?.total || 0,
-            icon: Clock,
-            color: "text-blue-600",
-          },
-          {
-            label: "Active",
-            value: jobsData?.data?.total || 0,
-            icon: Clock,
-            color: "text-primary",
-          },
-          {
-            label: "Under Review",
-            value: JOBS.filter((j) => j.status === "Under Review").length,
-            icon: Clock,
-            color: "text-amber-600",
-          },
-          {
-            label: "Completed",
-            value: JOBS.filter((j) => j.status === "Completed").length,
-            icon: CheckCircle,
-            color: "text-emerald-600",
-          },
-        ].map((s) => (
-          <Card key={s.label} className="bg-white border-border/60 shadow-sm">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-              </div>
-              <s.icon className={`size-5 ${s.color}`} />
-            </CardContent>
-          </Card>
-        ))}
-      </div> */}
 
       {/* New job requests */}
       {
@@ -275,27 +292,35 @@ export default function DesignerProjectsPage() {
                     {j.payment_status}
                   </TableCell>
                   <TableCell className="text-sm font-bold text-foreground text-center">
-                    {j.service_price}
+                    ${j.service_price}
                   </TableCell>
                   <TableCell className="">
-                    <div className="flex items-center gap-2 justify-center">
-                      <Link
-                        href={`/designer/projects/${j.id}/files`}
-                        className="text-xs font-medium text-primary hover:underline flex items-center gap-1 whitespace-nowrap"
-                      >
-                        Files View <ArrowRight size={11} />
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 px-3 text-xs text-red-500 border-red-200 hover:bg-red-50"
-                        // onClick={() => setDeclined((prev) => [...prev, j.id])}
-                      >
-                        Decline
-                      </Button>
-                      <Button size="sm" className="h-7 px-3 text-xs" asChild>
-                        <Link href={`/designer/projects/${j.id}`}>Accept</Link>
-                      </Button>
+                    <div className="flex items-center gap-4 justify-center">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            // href={`/designer/projects/${j.id}/files`}
+                            className="text-xs font-medium text-primary hover:underline flex items-center gap-1 whitespace-nowrap"
+                          >
+                            Files View <ArrowRight size={11} />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-white h-[90dvh] min-w-[90dvw]">
+                          <DialogHeader className="hidden">
+                            <DialogTitle></DialogTitle>
+                          </DialogHeader>
+                          <ViewJob j={j} />
+                        </DialogContent>
+                      </Dialog>
+                      <ActionJobReq
+                        id={j.id}
+                        refetch={() => {
+                          refetch();
+                          refetchWorkingJobs();
+                        }}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -309,12 +334,20 @@ export default function DesignerProjectsPage() {
       <Card className="bg-white border-border/60 shadow-sm">
         <div className="p-4 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
-            {TABS.map((t) => (
+            {[
+              "in_progress",
+              "submitted",
+              "revision",
+              "resubmitted",
+              "completed",
+              "disputed",
+              "disputed_closed",
+            ].map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors capitalize ${
                   tab === t
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -342,16 +375,7 @@ export default function DesignerProjectsPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border/60 hover:bg-transparent">
-              {[
-                "Job",
-                "Practice",
-                "Type",
-                "Priority",
-                "Due Date",
-                "Fee",
-                "Status",
-                "",
-              ].map((h) => (
+              {["Job", "Practice", "Due Date", "Fee", "Status", ""].map((h) => (
                 <TableHead
                   key={h}
                   className="text-xs font-medium text-muted-foreground uppercase tracking-wide first:pl-6"
@@ -361,52 +385,59 @@ export default function DesignerProjectsPage() {
               ))}
             </TableRow>
           </TableHeader>
-          {/* <TableBody>
-            {filtered.map((j) => (
+          <TableBody>
+            {workingJobsData?.data?.data.map((j) => (
               <TableRow
                 key={j.id}
                 className="border-border/60 hover:bg-muted/30"
               >
                 <TableCell className="pl-6">
                   <p className="text-sm font-semibold text-foreground">
-                    {j.title}
+                    {j.project_title}
                   </p>
                   <p className="text-xs font-mono text-muted-foreground">
                     {j.id}
                   </p>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {j.practice}
+                  {j.service_name}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {j.type}
-                </TableCell>
-                <TableCell
-                  className={`text-xs font-medium ${PRIORITY_STYLES[j.priority]}`}
-                >
-                  {j.priority}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {j.due}
+                  {new Date(j.project_status_changed_at).toLocaleDateString(
+                    "en-US",
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    },
+                  )}
                 </TableCell>
                 <TableCell className="text-sm font-semibold text-foreground">
-                  {j.fee}
+                  {j.service_price ? `$${j.service_price}` : "-"}
                 </TableCell>
-                <TableCell>
-                  <span
-                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[j.status]}`}
-                  >
-                    {j.status}
-                  </span>
+                <TableCell className={`text-xs font-medium `}>
+                  <Badge>{j.project_status}</Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Link
-                      href={`/designer/projects/${j.id}`}
-                      className="text-xs text-primary hover:underline flex items-center gap-1"
-                    >
-                      Files View <ArrowRight size={11} />
-                    </Link>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          // href={`/designer/projects/${j.id}/files`}
+                          className="text-xs font-medium text-primary hover:underline flex items-center gap-1 whitespace-nowrap"
+                        >
+                          Files View <ArrowRight size={11} />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-white h-[90dvh] min-w-[90dvw]">
+                        <DialogHeader className="hidden">
+                          <DialogTitle></DialogTitle>
+                        </DialogHeader>
+                        <ViewJob j={j} />
+                      </DialogContent>
+                    </Dialog>
                     <Link
                       href={`/designer/projects/${j.id}`}
                       className="text-xs text-muted-foreground hover:underline"
@@ -417,7 +448,7 @@ export default function DesignerProjectsPage() {
                 </TableCell>
               </TableRow>
             ))}
-          </TableBody> */}
+          </TableBody>
         </Table>
 
         <div className="px-6 py-4 border-t border-border/60">
