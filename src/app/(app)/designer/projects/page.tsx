@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  DownloadIcon,
-  Search,
-  X,
-} from "lucide-react";
+import { ArrowRight, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -20,8 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { base_url, howl } from "@/lib/api";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -30,93 +23,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Image from "next/image";
-import { toast } from "sonner";
 import ViewJob from "./view-job";
 import ActionJobReq from "./action-job-req";
-
-const JOBS = [
-  {
-    id: "PRJ-1042",
-    title: "Full Arch Implant Bar",
-    practice: "Bright Smiles Dental",
-    type: "Implant Bar",
-    status: "In Progress",
-    due: "Jun 9, 2024",
-    fee: "$145",
-    priority: "Express",
-  },
-  {
-    id: "PRJ-1044",
-    title: "Crown & Bridge ×3",
-    practice: "Premier Orthodontics",
-    type: "Crown & Bridge",
-    status: "New",
-    due: "Jun 10, 2024",
-    fee: "$95",
-    priority: "Standard",
-  },
-  {
-    id: "PRJ-1045",
-    title: "All-on-4 Framework",
-    practice: "Advanced Periodontics",
-    type: "Full Arch",
-    status: "In Progress",
-    due: "Jun 12, 2024",
-    fee: "$185",
-    priority: "Standard",
-  },
-  {
-    id: "PRJ-1046",
-    title: "Implant Abutment ×2",
-    practice: "City Dental Group",
-    type: "Implants",
-    status: "Under Review",
-    due: "Jun 8, 2024",
-    fee: "$110",
-    priority: "Rush",
-  },
-  {
-    id: "PRJ-1047",
-    title: "Anterior Veneers ×4",
-    practice: "Smile Vision Clinic",
-    type: "Veneers",
-    status: "New",
-    due: "Jun 14, 2024",
-    fee: "$100",
-    priority: "Standard",
-  },
-  {
-    id: "PRJ-1040",
-    title: "Partial Denture Lower",
-    practice: "Oral Care Center",
-    type: "Full Arch",
-    status: "Completed",
-    due: "Jun 4, 2024",
-    fee: "$75",
-    priority: "Standard",
-  },
-  {
-    id: "PRJ-1039",
-    title: "Anterior Veneers ×6",
-    practice: "Bright Smiles Dental",
-    type: "Veneers",
-    status: "Completed",
-    due: "Jun 3, 2024",
-    fee: "$110",
-    priority: "Standard",
-  },
-  {
-    id: "PRJ-1036",
-    title: "Full Arch Scan Review",
-    practice: "Oral Care Center",
-    type: "Full Arch",
-    status: "Completed",
-    due: "Jun 1, 2024",
-    fee: "$65",
-    priority: "Standard",
-  },
-];
 
 export default function DesignerProjectsPage() {
   const [tab, setTab] = useState("in_progress");

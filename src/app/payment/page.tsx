@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  CreditCard,
-  Lock,
-  ShieldCheck,
-} from "lucide-react";
+import { CreditCard, Lock, ShieldCheck } from "lucide-react";
 import { Outfit } from "next/font/google";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -49,7 +45,11 @@ export default function PaymentPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const canSubmit = card.replace(/\s/g, "").length === 16 && expiry.length >= 7 && cvc.length >= 3 && name.trim();
+  const canSubmit =
+    card.replace(/\s/g, "").length === 16 &&
+    expiry.length >= 7 &&
+    cvc.length >= 3 &&
+    name.trim();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +65,9 @@ export default function PaymentPage() {
       {/* Header */}
       <header className="px-6 py-5 flex items-center justify-between max-w-[1280px] mx-auto w-full">
         <Link href="/">
-          <span className={cn("text-xl font-bold text-gray-900", outfit.className)}>
+          <span
+            className={cn("text-xl font-bold text-gray-900", outfit.className)}
+          >
             exo connect
           </span>
         </Link>
@@ -80,16 +82,22 @@ export default function PaymentPage() {
               <p className="text-sm font-semibold text-gray-900">
                 {plan.name} Plan — Monthly
               </p>
-              <p className="text-lg font-bold text-gray-900">${plan.price}/mo</p>
+              <p className="text-lg font-bold text-gray-900">
+                ${plan.price}/mo
+              </p>
             </div>
-            <p className="text-xs text-gray-400">14-day free trial. Cancel anytime.</p>
+            <p className="text-xs text-gray-400">
+              14-day free trial. Cancel anytime.
+            </p>
           </div>
 
           {/* Card form */}
           <div className="bg-white rounded-2xl border border-gray-200/80 p-6 space-y-5">
             <div className="flex items-center gap-2 mb-1">
               <CreditCard size={16} className="text-gray-400" />
-              <p className="text-sm font-semibold text-gray-900">Payment Details</p>
+              <p className="text-sm font-semibold text-gray-900">
+                Payment Details
+              </p>
               <span className="ml-auto flex items-center gap-1 text-[11px] text-gray-400">
                 <Lock size={11} />
                 Secured by Stripe
@@ -98,7 +106,9 @@ export default function PaymentPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-600">Cardholder Name</Label>
+                <Label className="text-xs font-medium text-gray-600">
+                  Cardholder Name
+                </Label>
                 <Input
                   placeholder="John Doe"
                   value={name}
@@ -109,7 +119,9 @@ export default function PaymentPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-600">Card Number</Label>
+                <Label className="text-xs font-medium text-gray-600">
+                  Card Number
+                </Label>
                 <div className="relative">
                   <Input
                     placeholder="1234 5678 9012 3456"
@@ -119,13 +131,18 @@ export default function PaymentPage() {
                     autoComplete="cc-number"
                     inputMode="numeric"
                   />
-                  <CreditCard size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                  <CreditCard
+                    size={16}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-600">Expiry Date</Label>
+                  <Label className="text-xs font-medium text-gray-600">
+                    Expiry Date
+                  </Label>
                   <Input
                     placeholder="MM / YY"
                     value={expiry}
@@ -136,11 +153,15 @@ export default function PaymentPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-600">CVC</Label>
+                  <Label className="text-xs font-medium text-gray-600">
+                    CVC
+                  </Label>
                   <Input
                     placeholder="123"
                     value={cvc}
-                    onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    onChange={(e) =>
+                      setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))
+                    }
                     className="h-11 font-mono"
                     autoComplete="cc-csc"
                     inputMode="numeric"
@@ -152,7 +173,8 @@ export default function PaymentPage() {
               <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-3 flex items-center gap-2">
                 <ShieldCheck size={14} className="text-primary shrink-0" />
                 <p className="text-[11px] text-gray-400">
-                  Your payment info is encrypted and never stored on our servers.
+                  Your payment info is encrypted and never stored on our
+                  servers.
                 </p>
               </div>
 
@@ -168,9 +190,14 @@ export default function PaymentPage() {
 
           <p className="text-center text-xs text-gray-400 mt-5">
             By subscribing you agree to our{" "}
-            <Link href="#" className="underline underline-offset-2">Terms</Link>
-            {" "}and{" "}
-            <Link href="#" className="underline underline-offset-2">Privacy Policy</Link>.
+            <Link href="#" className="underline underline-offset-2">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="#" className="underline underline-offset-2">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </div>
       </main>

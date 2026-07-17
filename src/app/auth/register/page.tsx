@@ -3,7 +3,7 @@
 import { Building2, Eye, EyeOff, Lock, Mail, MapPin, User } from "lucide-react";
 import { Outfit } from "next/font/google";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,9 +40,9 @@ import {
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useCompleteDataStore } from "@/store/register";
 const outfit = Outfit({ subsets: ["latin"] });
 type Role = "dentist" | "designer";
 function RegisterContent() {
@@ -67,7 +67,8 @@ function RegisterContent() {
   const [step, setStep] = useState<1 | 2>(1);
   const [otp, setOtp] = useState("");
   const [otpDialogOpen, setOtpDialogOpen] = useState(false);
-  const { mutate: registerMutate, isPending: isRegistering } = useRegister();
+  const { setCompleteData } = useCompleteDataStore();
+  const router = useRouter();
   const {
     register: registerStep1,
     handleSubmit: handleSubmitStep1,
@@ -120,20 +121,22 @@ function RegisterContent() {
           }),
     };
 
-    registerMutate(completeData, {
-      onSuccess: (response) => {
-        toast.success(response?.message || "Registration successful!");
-        console.log("Registration successful:", response);
-        console.log("OTP:", response.data.otp);
-        setOtpDialogOpen(true);
-        // Handle success (e.g., redirect to login page or show a success message)
-      },
-      onError: (error) => {
-        console.error("Registration failed:", error);
-        toast.error("Registration failed. Please try again.");
-        // Handle error (e.g., show an error message)
-      },
-    });
+    // registerMutate(completeData, {
+    //   onSuccess: (response) => {
+    //     toast.success(response?.message || "Registration successful!");
+    //     console.log("Registration successful:", response);
+    //     console.log("OTP:", response.data.otp);
+    //     setOtpDialogOpen(true);
+    //     // Handle success (e.g., redirect to login page or show a success message)
+    //   },
+    //   onError: (error) => {
+    //     console.error("Registration failed:", error);
+    //     toast.error("Registration failed. Please try again.");
+    //     // Handle error (e.g., show an error message)
+    //   },
+    // });
+    setCompleteData(completeData);
+    router.push("/auth/register/subscription");
   };
 
   const handleVerifyOtp = () => {
