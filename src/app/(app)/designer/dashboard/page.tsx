@@ -106,15 +106,21 @@ function JobsTable({
   jobs,
   search,
 }: {
-  jobs: typeof ACTIVE_JOBS;
+  jobs: {
+    requested_jobs: number;
+    total_active_jobs: number;
+    total_completed_jobs: number;
+    total_earning: number;
+    total_payout: number;
+  }[];
   search: string;
 }) {
-  const filtered = jobs.filter(
-    (j) =>
-      search === "" ||
-      j.title.toLowerCase().includes(search.toLowerCase()) ||
-      j.client.toLowerCase().includes(search.toLowerCase()),
-  );
+  // const filtered = jobs.filter(
+  //   (j) =>
+  //     search === "" ||
+  //     j.title.toLowerCase().includes(search.toLowerCase()) ||
+  //     j.client.toLowerCase().includes(search.toLowerCase()),
+  // );
 
   return (
     <div className="bg-white rounded-2xl border border-border/60 overflow-hidden mt-4">
@@ -132,7 +138,7 @@ function JobsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filtered.map((j, i) => (
+          {jobs.map((j, i) => (
             <TableRow key={`${j.id}-${i}`} className="border-border/60">
               <TableCell className="px-6 py-4 font-semibold text-foreground">
                 {j.id}
@@ -195,7 +201,7 @@ export default function DesignerDashboardPage() {
     },
   });
   const { data: jobsData, isPending: isJobsPending } = useQuery({
-    queryKey: ["designer-stats"],
+    queryKey: ["designer-jobs"],
     queryFn: async (): Promise<{
       status: boolean;
       message: string;
@@ -273,13 +279,23 @@ export default function DesignerDashboardPage() {
             className="flex-1 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
           />
         </div>
-
+        <pre className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-amber-400 rounded-xl p-6 shadow-lg overflow-x-auto text-sm leading-relaxed border border-zinc-700">
+          <code className="whitespace-pre-wrap">
+            {JSON.stringify(jobsData, null, 2)}
+          </code>
+        </pre>
         <TabsContent value="active">
-          <JobsTable jobs={ACTIVE_JOBS} search={search} />
+          {/* {isJobsPending ? (
+            <div className="text-sm text-muted-foreground mt-4">
+              Loading jobs...
+            </div>
+          ) : (
+            <JobsTable jobs={jobsData?.data || []} search={search} />
+          )} */}
         </TabsContent>
-        <TabsContent value="completed">
+        {/* <TabsContent value="completed">
           <JobsTable jobs={COMPLETED_JOBS} search={search} />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

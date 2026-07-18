@@ -9,7 +9,21 @@ import { useCompleteDataStore } from "@/store/register";
 import { useQuery } from "@tanstack/react-query";
 import { howl } from "@/lib/api";
 import { useState } from "react";
-
+import { useRegister, useVerifyOtp } from "@/hooks/api/use-auth";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Button } from "@/components/ui/button";
 const outfit = Outfit({ subsets: ["latin"] });
 
 type Plan = {
@@ -97,7 +111,11 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: () => void }) {
 export default function SubscriptionPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [otpDialogOpen, setOtpDialogOpen] = useState(false);
+  const { mutate: registerMutate, isPending: isRegistering } = useRegister();
+  const [otp, setOtp] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const { mutate: verifyOtpMutate, isPending: isVerifyingOtp } = useVerifyOtp();
   const { data, isPending } = useQuery({
     queryKey: ["get_subs"],
     queryFn: async (): Promise<{
@@ -121,10 +139,53 @@ export default function SubscriptionPage() {
     },
   });
   const { completeData } = useCompleteDataStore();
+  const navig = useRouter();
   const role = searchParams.get("role") ?? "dentist";
-
   const handleSelect = (planId: string) => {
-    router.push(`/payment?plan=${planId}&role=${role}`);
+    setSelectedPlanId(planId);
+    registerMutate(
+      { ...completeData, subscription_id: planId },
+      {
+        onSuccess: (response) => {
+          toast.success(response?.message || "Registration successful!");
+          console.log("Registration successful:", response);
+          console.log("OTP:", response.data.otp);
+          setOtpDialogOpen(true);
+          // Handle success (e.g., redirect to login page or show a success message)
+        },
+        onError: (error) => {
+          console.error("Registration failed:", error);
+          toast.error("Registration failed. Please try again.");
+          // Handle error (e.g., show an error message)
+        },
+      },
+    );
+  };
+  const handleVerifyOtp = () => {
+    // Implement OTP verification logic here
+    if (!selectedPlanId) {
+      toast.error("No plan selected. Please select a plan first.");
+      return;
+    }
+    console.log("Verifying OTP:", otp);
+    verifyOtpMutate(
+      { subscription_id: selectedPlanId ?? "", otp },
+      {
+        onSuccess: (response) => {
+          toast.success(response?.message || "OTP verified successfully!");
+          console.log("OTP verified successfully:", response);
+          // Handle success (e.g., redirect to login page or show a success message)
+          navig.push("/auth/login");
+        },
+        onError: (error) => {
+          console.error("OTP verification failed:", error);
+          toast.error("OTP verification failed. Please try again.");
+          // Handle error (e.g., show an error message)
+        },
+      },
+    );
+    // For demonstration, we'll just close the dialog
+    setOtpDialogOpen(false);
   };
 
   return (
@@ -185,6 +246,40 @@ export default function SubscriptionPage() {
           </p>
         </div>
       </main>
+      <Dialog open={otpDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Verify Your Account</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please check your email and enter the OTP from your email to
+              complete your registration.
+            </p>
+            <div className="flex justify-center items-center">
+              <InputOTP maxLength={6} value={otp} onChange={(e) => setOtp(e)}>
+                <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              size="lg"
+              onClick={handleVerifyOtp}
+              disabled={isVerifyingOtp || isRegistering}
+            >
+              Verify Code
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

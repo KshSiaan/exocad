@@ -12,6 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -27,6 +29,13 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const { data, isPending } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await howl("/get-profile");
+      return res as any;
+    },
+  });
 
   useEffect(() => {
     const onScroll = () => {
@@ -140,18 +149,39 @@ export function Navbar() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Link
-                href="/auth/login"
-                className="text-[#a0a0b8] hover:text-white text-sm font-medium px-4 py-2 transition-colors rounded-lg hover:bg-white/[0.06]"
-              >
-                Login
-              </Link>
-              <Button
-                className="h-10 bg-white hover:bg-white/80 text-black"
-                asChild
-              >
-                <Link href="/auth/register">Get Started</Link>
-              </Button>
+              {data?.data?.user ? (
+                <Button
+                  className="h-10 bg-white hover:bg-white/80 text-black"
+                  asChild
+                >
+                  <Link
+                    href={
+                      data.data.user.role === "ADMIN"
+                        ? "/admin"
+                        : data?.data?.user?.role === "DESIGNER"
+                          ? "/designer/dashboard"
+                          : "/dashboard"
+                    }
+                  >
+                    {data.data.user.full_name}
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="text-[#a0a0b8] hover:text-white text-sm font-medium px-4 py-2 transition-colors rounded-lg hover:bg-white/[0.06]"
+                  >
+                    Login
+                  </Link>
+                  <Button
+                    className="h-10 bg-white hover:bg-white/80 text-black"
+                    asChild
+                  >
+                    <Link href="/auth/register">Get Started</Link>
+                  </Button>
+                </>
+              )}{" "}
             </div>
 
             {/* Mobile toggle */}

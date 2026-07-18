@@ -28,20 +28,7 @@ import {
   type RegisterStep2Dentist,
   type RegisterStep2Designer,
 } from "@/lib/schemas";
-import { useRegister } from "@/hooks/api/use-auth";
-import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+
 import { useCompleteDataStore } from "@/store/register";
 const outfit = Outfit({ subsets: ["latin"] });
 type Role = "dentist" | "designer";
@@ -66,7 +53,7 @@ function RegisterContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [otp, setOtp] = useState("");
-  const [otpDialogOpen, setOtpDialogOpen] = useState(false);
+
   const { setCompleteData } = useCompleteDataStore();
   const router = useRouter();
   const {
@@ -139,13 +126,6 @@ function RegisterContent() {
     router.push("/auth/register/subscription");
   };
 
-  const handleVerifyOtp = () => {
-    // Implement OTP verification logic here
-    console.log("Verifying OTP:", otp);
-    // For demonstration, we'll just close the dialog
-    setOtpDialogOpen(false);
-  };
-
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left panel */}
@@ -200,36 +180,6 @@ function RegisterContent() {
 
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-6">
-        <Dialog open={otpDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Verify Your Account</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Please check your email and enter the OTP from your email to
-                complete your registration.
-              </p>
-              <div className="flex justify-center items-center">
-                <InputOTP maxLength={6} value={otp} onChange={(e) => setOtp(e)}>
-                  <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button size="lg" onClick={handleVerifyOtp}>
-                Verify Code
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
         <div className="w-full max-w-md space-y-7">
           <div className="space-y-2">
             <Link href="/" className="lg:hidden block mb-6">

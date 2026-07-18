@@ -20,6 +20,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const TOTAL_EARNINGS = 4280;
 const TOTAL_WITHDRAWN = 2840;
@@ -130,7 +132,97 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function DesignerEarningsPage() {
   const [search, setSearch] = useState("");
-
+  const { data } = useQuery({
+    queryKey: ["designer-earnings"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        total_earning: string;
+        total_payout: number;
+      };
+    }> => {
+      return howl("/designer/earning-info");
+    },
+  });
+  const { data: curveData } = useQuery({
+    queryKey: ["designer-earnings_curve"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        filter: string;
+        chart: Array<{
+          month: string;
+          value: number;
+        }>;
+      };
+    }> => {
+      return howl("/designer/earning-curve?filter=monthly");
+    },
+  });
+  const { data: earningDataset } = useQuery({
+    queryKey: ["designer-earnings_dataset"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        current_page: number;
+        data: Array<{
+          id: number;
+          project_id: number;
+          dentist_id: number;
+          designer_id: number;
+          project_amount: string;
+          commission_percentage: number;
+          commission: string;
+          payable_amount: string;
+          date: string;
+          status: string;
+          payment_purpose: string;
+          created_at: string;
+          updated_at: string;
+          project: {
+            id: number;
+            project_number: string;
+            project_title: string;
+          };
+          dentist: {
+            id: number;
+            full_name: string;
+            role: string;
+            email: string;
+            avatar_url: string;
+          };
+          designer: {
+            id: number;
+            full_name: string;
+            role: string;
+            email: string;
+            avatar_url: string;
+          };
+        }>;
+        first_page_url: string;
+        from: number;
+        last_page: number;
+        last_page_url: string;
+        links: Array<{
+          url?: string;
+          label: string;
+          page?: number;
+          active: boolean;
+        }>;
+        next_page_url: any;
+        path: string;
+        per_page: number;
+        prev_page_url: any;
+        to: number;
+        total: number;
+      };
+    }> => {
+      return howl("/designer/get-earnings");
+    },
+  });
   const filtered = TRANSACTIONS.filter(
     (t) =>
       !search ||
@@ -149,12 +241,12 @@ export default function DesignerEarningsPage() {
             <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center">
               <DollarSign size={16} className="text-muted-foreground" />
             </div>
-            <span className="text-xs font-semibold text-emerald-600">
+            {/* <span className="text-xs font-semibold text-emerald-600">
               +18.4%
-            </span>
+            </span> */}
           </div>
           <p className="text-3xl font-bold text-foreground">
-            ${TOTAL_EARNINGS.toLocaleString()}
+            ${data?.data?.total_earning}
           </p>
           <p className="text-sm text-muted-foreground mt-1">Total Earnings</p>
         </div>
@@ -169,7 +261,7 @@ export default function DesignerEarningsPage() {
             </span>
           </div>
           <p className="text-3xl font-bold text-foreground">
-            ${TOTAL_WITHDRAWN.toLocaleString()}
+            ${data?.data?.total_payout?.toLocaleString()}
           </p>
           <p className="text-sm text-muted-foreground mt-1">Total Withdrawn</p>
         </div>
@@ -199,7 +291,7 @@ export default function DesignerEarningsPage() {
           <div className="h-[280px] mt-6">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={REVENUE_DATA}
+                data={curveData?.data?.chart || []}
                 margin={{ top: 4, right: 4, left: -8, bottom: 0 }}
               >
                 <defs>
@@ -237,9 +329,7 @@ export default function DesignerEarningsPage() {
                     fontSize: 11,
                     fill: "hsl(var(--muted-foreground))",
                   }}
-                  tickFormatter={(v: number) =>
-                    v === 0 ? "0" : `${(v / 1000) * 7.5}`
-                  }
+                  tickFormatter={(v) => v.toLocaleString()}
                 />
                 <Tooltip
                   contentStyle={{
@@ -248,29 +338,19 @@ export default function DesignerEarningsPage() {
                     borderRadius: 8,
                     fontSize: 12,
                   }}
-                  formatter={(v, name) => [
-                    `$${Number(v ?? 0).toLocaleString()}`,
-                    name === "revenue" ? "Revenue" : "Commission",
+                  formatter={(v) => [
+                    `$${Number(v).toLocaleString()}`,
+                    "Revenue",
                   ]}
                 />
                 <Area
                   type="monotone"
-                  dataKey="revenue"
+                  dataKey="value"
                   stroke="hsl(var(--foreground))"
                   strokeWidth={2}
                   fill="url(#revGrad)"
                   dot={false}
                   activeDot={{ r: 4 }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="commission"
-                  stroke="hsl(var(--muted-foreground))"
-                  strokeWidth={1.5}
-                  strokeDasharray="4 3"
-                  fill="none"
-                  dot={false}
-                  activeDot={{ r: 3 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -313,33 +393,35 @@ export default function DesignerEarningsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((t, i) => (
+            {earningDataset?.data?.data.map((t, i) => (
               <TableRow
-                key={`${t.trx}-${i}`}
+                key={`${t.id}`}
                 className="border-border/60 hover:bg-muted/20"
               >
-                <TableCell className="px-6 py-4 text-sm font-medium text-muted-foreground">
-                  {t.trx}
+                <TableCell className="px-6 py-4 text-xs font-medium text-muted-foreground">
+                  {t.project.project_number}
                 </TableCell>
-                <TableCell className="px-6 py-4 text-sm font-semibold text-foreground">
-                  {t.designer}
+                <TableCell className="px-6 py-4 text-xs font-semibold text-foreground">
+                  {t.designer.full_name}
                 </TableCell>
-                <TableCell className="px-6 py-4 text-sm font-semibold text-foreground">
-                  {t.dentist}
+                <TableCell className="px-6 py-4 text-xs font-semibold text-foreground">
+                  {t.dentist.full_name}
                 </TableCell>
                 <TableCell className="px-6 py-4">
-                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Briefcase size={13} className="shrink-0" />
-                    {t.serviceType}
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Briefcase size={13} className="shrink-0 text-xs" />
+                    {t.payment_purpose}
                   </span>
                 </TableCell>
-                <TableCell className="px-6 py-4 text-sm font-semibold text-foreground">
-                  {t.amount}
+                <TableCell className="px-6 py-4 text-xs font-semibold text-foreground">
+                  {t.commission
+                    ? `$${Number(t.commission).toLocaleString()}`
+                    : "N/A"}
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <StatusBadge status={t.status} />
                 </TableCell>
-                <TableCell className="px-6 py-4 text-sm text-muted-foreground">
+                <TableCell className="px-6 py-4 text-muted-foreground text-xs">
                   {t.date}
                 </TableCell>
               </TableRow>

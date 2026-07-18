@@ -1,28 +1,30 @@
 "use client";
 
 import {
-  AlertTriangle,
-  CheckCircle2,
+  CheckCircle,
   ClockIcon,
   Download,
-  FileText,
-  HelpCircle,
-  MessageCircle,
-  Triangle,
-  Upload,
   UploadIcon,
+  XIcon,
 } from "lucide-react";
 import { use, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { base_api, base_url, howl } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { useCookies } from "react-cookie";
 
 const PROJECT = {
   id: "PRJ-1042",
@@ -34,32 +36,6 @@ const PROJECT = {
     initials: "BS",
   },
 };
-
-const PRACTICE_FILES = [
-  { name: "prescription.pdf", size: "1.1 MB" },
-  { name: "scan_patient_2847.stl", size: "32.1 MB" },
-  { name: "reference_notes.pdf", size: "0.8 MB" },
-];
-
-const MESSAGES = [
-  {
-    id: 1,
-    from: "practice",
-    text: "Please note that the marginal width should not exceed 0.5mm for this case.",
-    time: "10:14 AM",
-  },
-  {
-    id: 2,
-    from: "me",
-    text: "Got it. I have reviewed the case guidelines. The alignment layout looks standard — will proceed.",
-    time: "10:30 AM",
-  },
-];
-
-const MY_FILES = [
-  { name: "crown_alignment_v1.stl", size: "4.2 MB", time: "Today, 08:30 AM" },
-  { name: "upper_arch_scan.stl", size: "6.8 MB", time: "Yesterday, 03:15 PM" },
-];
 
 const LIFECYCLE = [
   {
@@ -87,72 +63,248 @@ export default function DesignerProjectDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  use(params);
+  const { id } = use(params);
+  const [selectedFiles, setSelectedFiles] = useState<File[] | null>([]);
+  const [{ token }] = useCookies(["token"]);
+  const { data, refetch } = useQuery({
+    queryKey: ["designer-project-detail", id],
+    queryFn: (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        id: number;
+        project_number: string;
+        dentist_id: number;
+        project_title: string;
+        project_description: string;
+        designer_id: number;
+        service_name: string;
+        service_price: string;
+        project_status: string;
+        project_status_changed_at: string;
+        payment_status: string;
+        dentist_scan_files: Array<string>;
+        designer_submitted_files: Array<string>;
+        designer_payout_status: any;
+        comments: any;
+        payment_type: string;
+        created_at: string;
+        updated_at: string;
+        deleted_at: any;
+      };
+    }> => {
+      return howl(`/designer/view-job/${id}`);
+    },
+  });
+  const { mutate, isPending, isSuccess } = useMutation({
+    mutationKey: ["submit-job"],
+    mutationFn: async () => {
+      const formData = new FormData();
+      selectedFiles?.forEach((file) => {
+        if (!file) {
+          throw new Error("No file selected");
+        }
+        for (let i = 0; i < selectedFiles.length; i++) {
+          formData.append(
+            `designer_submitted_files[${selectedFiles?.indexOf(file)}]`,
+            file,
+          );
+        }
+        formData.append("job_id", id);
+      });
+
+      const res = await fetch(`${base_url}${base_api}/designer/submit-job`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.json();
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to complete this request");
+    },
+    onSuccess: (res: any) => {
+      toast.success(res.message ?? "Success!");
+      refetch();
+    },
+  });
 
   const practiceData = [
-    { title: "Project ID", value: PROJECT.id },
+    { title: "Project ID", value: data?.data?.project_number },
     { title: "Practice Name", value: PROJECT.practice.name },
-    { title: "Location", value: PROJECT.practice.location },
-    { title: "Project Status", value: PROJECT.status },
+    // { title: "Location", value: PROJECT.practice.location },
+    { title: "Project Status", value: data?.data?.project_status },
   ];
 
   return (
     <div className="overflow-hidden lg:h-[calc(100dvh-124px)] grid grid-cols-4 gap-6">
       <div className="col-span-3 space-y-6">
         <h2 className="text-lg font-semibold mb-2 text-foreground">
-          Full Arch Implant Bar — Patient #2847
+          Full Arch Implant Bar — Patient #{data?.data?.project_number}
         </h2>
         <Card>
           <CardHeader>
             <CardTitle>Received Files (from dentist)</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Card>
-              <CardContent className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Badge>STL</Badge>
-                  <div className="">
-                    <p className="font-medium">Scan_patient_2847.stl</p>
-                    <p className="text-xs text-muted-foreground">
-                      32.1 MB · Jun 5, 09:15 AM
-                    </p>
+          <CardContent className="space-y-2">
+            {data?.data?.dentist_scan_files?.map((file) => (
+              <Card key={`${file}`} className="mb-2">
+                <CardContent className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Badge>
+                      {file.split("/").pop()?.split(".").pop()?.toUpperCase() ||
+                        "FILE"}
+                    </Badge>
+                    <div className="">
+                      <p className="font-medium">{file.split("/").pop()}</p>
+                      {/* <p className="text-xs text-muted-foreground">
+                        32.1 MB · Jun 5, 09:15 AM
+                      </p> */}
+                    </div>
                   </div>
-                </div>
-                <Button variant="ghost" size="icon" className="gap-2">
-                  <Download size={14} />
-                </Button>
-              </CardContent>
-            </Card>
+                  <Button variant="ghost" size="icon" className="gap-2" asChild>
+                    <a href={`${base_url}${file}`} download>
+                      <Download size={14} />
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>Your Uploaded Files</CardTitle>
-            <Button variant="outline" size="sm">
-              <UploadIcon /> Upload File
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                {data?.data?.project_status === "in_progress" && (
+                  <Button variant="outline" size="sm">
+                    <UploadIcon /> Upload File
+                  </Button>
+                )}
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Upload File</DialogTitle>
+                </DialogHeader>
+                <div className=" rounded-lg p-4 ">
+                  {isSuccess ? (
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <CheckCircle className="size-18" />
+                      <h4>Files uploaded successfully!</h4>
+                    </div>
+                  ) : isPending ? (
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Spinner className="size-18" />
+                      <h4>Uploading files...</h4>
+                    </div>
+                  ) : selectedFiles && selectedFiles.length > 0 ? (
+                    <ul className="space-y-2">
+                      {selectedFiles.map((file, index) => (
+                        <li
+                          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                          key={index}
+                          className="flex items-center gap-2 justify-between"
+                        >
+                          <span className="text-xs line-clamp-1 text-muted-foreground">
+                            {file.name}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedFiles(
+                                (prevFiles) =>
+                                  prevFiles?.filter((_, i) => i !== index) ||
+                                  null,
+                              );
+                            }}
+                          >
+                            <XIcon />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <Input
+                      type="file"
+                      className="w-full"
+                      multiple
+                      onChange={(e) =>
+                        setSelectedFiles(Array.from(e.target.files || []))
+                      }
+                    />
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      if (!selectedFiles || selectedFiles.length === 0) {
+                        toast.error(
+                          "Please select at least one file to upload.",
+                        );
+                        return;
+                      }
+                      mutate();
+                    }}
+                    disabled={
+                      isPending || selectedFiles?.length === 0 || isSuccess
+                    }
+                  >
+                    {isPending ? "Submitting..." : "Submit Files"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardHeader>
           <CardContent>
-            <Card>
-              <CardContent className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Badge>STL</Badge>
-                  <div className="">
-                    <p className="font-medium">Scan_patient_2847.stl</p>
-                    <p className="text-xs text-muted-foreground">
-                      32.1 MB · Jun 5, 09:15 AM
-                    </p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" className="gap-2">
-                  <Download size={14} />
-                </Button>
-              </CardContent>
-            </Card>
+            {data?.data?.designer_submitted_files?.length === 0 ||
+            !data?.data?.designer_submitted_files ? (
+              <p className="text-sm text-muted-foreground">
+                No files uploaded yet.
+              </p>
+            ) : (
+              data?.data?.designer_submitted_files?.map((file) => (
+                <Card key={file} className="mb-2">
+                  <CardContent className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Badge>
+                        {file
+                          .split("/")
+                          .pop()
+                          ?.split(".")
+                          .pop()
+                          ?.toUpperCase() || "FILE"}
+                      </Badge>
+                      <div className="">
+                        <p className="font-medium">{file.split("/").pop()}</p>
+                        {/* <p className="text-xs text-muted-foreground">
+                          32.1 MB · Jun 5, 09:15 AM
+                        </p> */}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="gap-2"
+                      asChild
+                    >
+                      <a href={`${base_url}${file}`} download>
+                        <Download size={14} />
+                      </a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
-      <div className="grid grid-rows-2 gap-6">
+      <div className="grid grid-rows-3 gap-6">
         <Card className="h-full">
           <CardHeader>
             <CardTitle>Job Details</CardTitle>
@@ -168,19 +320,19 @@ export default function DesignerProjectDetailPage({
                 </span>
               </div>
             ))}
-            <Separator />
-            <CardTitle className="text-sm font-semibold">Case Notes</CardTitle>
+            {/* <Separator /> */}
+            {/* <CardTitle className="text-sm font-semibold">Case Notes</CardTitle>
             <CardDescription className="text-xs text-muted-foreground">
               Patient is fully edentulous maxillary arch. All-on-6 protocol.
               Titanium bar preferred. Milled output — please optimize for
               CADCAM. Contact any prior to finalization. Nobel Biocare MultiUnit
               17°, standard platform, gingival height ~3mm.
-            </CardDescription>
+            </CardDescription> */}
           </div>
         </Card>
-        <Card>
+        <Card className="row-span-2">
           <CardHeader>
-            <CardTitle className="flex item-center">
+            <CardTitle className="flex items-center gap-2">
               <ClockIcon className="size-4" />
               Progress
             </CardTitle>

@@ -12,6 +12,7 @@ export interface RegisterPayload {
     clinic_name?:string
     proffesional_title?:string
     bio?:string
+    subscription_id?:string
 }
 export interface LoginPayload {
     email:string

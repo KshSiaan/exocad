@@ -10,4 +10,7 @@ export const authService = {
 
   login: (payload: LoginPayload) =>
     howl<ApiResponse<LoginResponse>>("/login", { method: "POST", body: payload }),
+
+  verifyOtp: (payload: { subscription_id: string; otp: string }) =>
+    howl<ApiResponse<void>>("/verify-otp", { method: "POST", body: payload }),
 };

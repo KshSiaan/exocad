@@ -20,6 +20,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
+import { toast } from "sonner";
 
 const SECTIONS = [
   { id: "profile", label: "Public Profile", icon: Globe },
@@ -30,6 +33,160 @@ type Service = { id: string; name: string; price: string };
 
 export default function DesignerProfilePage() {
   const [activeSection, setActiveSection] = useState("profile");
+
+  const { data, isPending } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        user: {
+          id: number;
+          full_name: string;
+          role: string;
+          email: string;
+          email_verified_at: string;
+          status: string;
+          otp_verified_at: any;
+          otp: any;
+          otp_expires_at: any;
+          avatar: any;
+          stripe_connect_id: any;
+          is_trail_used: number;
+          google_id: any;
+          timezone: any;
+          login_status: number;
+          last_active: any;
+          created_at: string;
+          updated_at: string;
+          deleted_at: any;
+          avatar_url: string;
+          profile: {
+            id: number;
+            user_id: number;
+            professional_title: any;
+            specializations: any;
+            availability: boolean;
+            level: any;
+            bio: any;
+            clinic_name: any;
+            about_for_designer: any;
+            wallet_balance: string;
+            contact_email_address: any;
+            address: any;
+            phone_number: any;
+            created_at: string;
+            updated_at: string;
+          };
+        };
+      };
+    }> => {
+      return howl("/get-profile");
+    },
+  });
+
+  const { data: servicesData, isPending: isServicesPending } = useQuery({
+    queryKey: ["services"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: Array<{
+        id: number;
+        designer_id: number;
+        service_id: number;
+        custom_price: string;
+        note: string;
+        created_at: string;
+        updated_at: string;
+        service: {
+          id: number;
+          name: string;
+          min_price: string;
+        };
+      }>;
+    }> => {
+      return howl("/designer/services");
+    },
+  });
+
+  const { data: planData, isPending: isPlanPending } = useQuery({
+    queryKey: ["plan-info"],
+    queryFn: () => {
+      return howl("/designer/plan-info");
+    },
+  });
+  const { mutate: createPlan } = useMutation({
+    mutationKey: ["plan_create"],
+    mutationFn: (dataset: {
+      service_id: number;
+      custom_price: number;
+      note: string;
+    }) => {
+      return howl("/designer/add-service");
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to complete this request");
+    },
+    onSuccess: (res: any) => {
+      toast.success(res.message ?? "Success!");
+    },
+  });
+  const { mutate: updatePlan } = useMutation({
+    mutationKey: ["plan_update"],
+    mutationFn: (id: string, dataset: {}) => {
+      return howl(`/designer/edit-service/${id}?_method=PATCH`, {
+        body: dataset,
+      });
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to complete this request");
+    },
+    onSuccess: (res: any) => {
+      toast.success(res.message ?? "Success!");
+    },
+  });
+
+  const { mutate: deletePlan, isPending: isDeletingPlan } = useMutation({
+    mutationKey: ["plan_delete"],
+    mutationFn: (dataset: { service_id: number }) => {
+      return howl(`/designer/delete-service/${dataset.service_id}`, {
+        method: "DELETE",
+      });
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to complete this request");
+    },
+    onSuccess: (res: any) => {
+      toast.success(res.message ?? "Success!");
+    },
+  });
+
+  const { mutate, isPending: isUpdating } = useMutation({
+    mutationKey: ["updateProfile"],
+    mutationFn: (dataset: {
+      full_name: string;
+      phone_number: string;
+      address: string;
+      contact_email_address: string;
+      professional_title: string;
+      specializations: string[];
+      availability: boolean;
+      bio: string;
+      clinic_name: string;
+      about_for_designer: string;
+    }) => {
+      return howl("/update-profile", {
+        method: "POST",
+        body: dataset,
+      });
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to complete this request");
+    },
+    onSuccess: (res: any) => {
+      toast.success(res.message ?? "Success!");
+    },
+  });
 
   // Basic info
   const [title, setTitle] = useState("Senior Dental CAD Designer");

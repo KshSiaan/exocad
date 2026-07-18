@@ -28,7 +28,13 @@ export function useLogin() {
             navig.push("/admin/dashboard")
           }
     }
-  });
-  
+  })
+}
 
+export function useVerifyOtp() {
+  return useMutation({
+    mutationKey: ["verify-otp"],
+    mutationFn: (payload: { subscription_id: string; otp: string }) =>
+      authService.verifyOtp(payload),
+  });
 }
