@@ -13,6 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const PROJECTS = [
   {
@@ -124,6 +126,57 @@ export default function ProjectsPage() {
     return matchTab && matchSearch;
   });
 
+  const { data, isPending } = useQuery({
+    queryKey: ["projects", search],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        current_page: number;
+        data: Array<{
+          id: number;
+          project_number: string;
+          dentist_id: number;
+          project_title: string;
+          project_description: string;
+          designer_id: number;
+          service_name: string;
+          service_price: string;
+          project_status: string;
+          project_status_changed_at: string;
+          payment_status: string;
+          dentist_scan_files: Array<string>;
+          designer_submitted_files?: Array<string>;
+          designer_payout_status?: string;
+          comments: any;
+          payment_type: string;
+          created_at: string;
+          updated_at: string;
+          deleted_at: any;
+          files_expiry_status: Array<string>;
+        }>;
+        first_page_url: string;
+        from: number;
+        last_page: number;
+        last_page_url: string;
+        links: Array<{
+          url?: string;
+          label: string;
+          page?: number;
+          active: boolean;
+        }>;
+        next_page_url: any;
+        path: string;
+        per_page: number;
+        prev_page_url: any;
+        to: number;
+        total: number;
+      };
+    }> => {
+      return howl(`/dentist/get-projects?search=${search}&per_page=12`);
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -198,39 +251,39 @@ export default function ProjectsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((p) => (
+            {data?.data?.data.map((p) => (
               <TableRow
                 key={p.id}
                 className="border-border/60 hover:bg-muted/30 cursor-pointer"
               >
                 <TableCell className="pl-6">
                   <p className="text-sm font-semibold text-foreground">
-                    {p.title}
+                    {p.project_title}
                   </p>
                   <p className="text-xs font-mono text-muted-foreground">
-                    {p.id}
+                    {p.project_number}
                   </p>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {p.type}
+                  {p.service_name}
                 </TableCell>
                 <TableCell className="text-sm text-foreground">
-                  {p.designer}
+                  {p.designer_id ? `${p.designer_id}` : "Unassigned"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {p.due}
+                  {new Date(p.project_status_changed_at).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {p.files} files
+                  {p.dentist_scan_files.length} files
                 </TableCell>
                 <TableCell className="text-sm font-semibold text-foreground">
-                  {p.price}
+                  {p.service_price}
                 </TableCell>
                 <TableCell>
                   <span
-                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[p.status]}`}
+                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${STATUS_STYLES[p.project_status]}`}
                   >
-                    {p.status}
+                    {p.project_status}
                   </span>
                 </TableCell>
                 <TableCell>

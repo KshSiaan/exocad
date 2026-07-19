@@ -13,37 +13,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const STATS = [
-  {
-    label: "Total Projects",
-    value: "4",
-    sub: "All Time",
-    icon: FileText,
-    color: "text-primary bg-primary/10",
-  },
-  {
-    label: "Active Projects",
-    value: "7",
-    sub: "Currently in workflow",
-    icon: Inbox,
-    color: "text-blue-600 bg-blue-50",
-  },
-  {
-    label: "Completed",
-    value: "38",
-    sub: "Successfully delivered",
-    icon: CheckCircle,
-    color: "text-emerald-600 bg-emerald-50",
-  },
-  {
-    label: "Pending Acceptance",
-    value: "31",
-    sub: "Awaiting your review",
-    icon: Clock,
-    color: "text-amber-600 bg-amber-50",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const ACTIVE_PROJECTS = [
   {
@@ -137,13 +108,119 @@ const MESSAGES = [
 ];
 
 export default function DashboardPage() {
+  const { data: me, isPending: mePending } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await howl("/get-profile");
+      return res as any;
+    },
+  });
+
+  const { data, isPending } = useQuery({
+    queryKey: ["dashboard-data"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        total_project: number;
+        active_project: number;
+        completed_project: number;
+        pending_acceptance: number;
+      };
+    }> => {
+      return howl("/dentist/card-info");
+    },
+  });
+
+  const STATS = [
+    {
+      label: "Total Projects",
+      value: data?.data.total_project || 0,
+      sub: "All Time",
+      icon: FileText,
+      color: "text-primary bg-primary/10",
+    },
+    {
+      label: "Active Projects",
+      value: data?.data.active_project || 0,
+      sub: "Currently in workflow",
+      icon: Inbox,
+      color: "text-blue-600 bg-blue-50",
+    },
+    {
+      label: "Completed",
+      value: data?.data.completed_project || 0,
+      sub: "Successfully delivered",
+      icon: CheckCircle,
+      color: "text-emerald-600 bg-emerald-50",
+    },
+    {
+      label: "Pending Acceptance",
+      value: data?.data.pending_acceptance || 0,
+      sub: "Awaiting your review",
+      icon: Clock,
+      color: "text-amber-600 bg-amber-50",
+    },
+  ];
+
+  const { data: activeProjectsData, isPending: isPendingActiveProjects } =
+    useQuery({
+      queryKey: ["active-projects"],
+      queryFn: async (): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+          current_page: number;
+          data: Array<{
+            id: number;
+            project_number: string;
+            dentist_id: number;
+            project_title: string;
+            project_description: string;
+            designer_id: number;
+            service_name: string;
+            service_price: string;
+            project_status: string;
+            project_status_changed_at: string;
+            payment_status: string;
+            dentist_scan_files: Array<string>;
+            designer_submitted_files?: Array<string>;
+            designer_payout_status: any;
+            comments: any;
+            payment_type: string;
+            created_at: string;
+            updated_at: string;
+            deleted_at: any;
+          }>;
+          first_page_url: string;
+          from: number;
+          last_page: number;
+          last_page_url: string;
+          links: Array<{
+            url?: string;
+            label: string;
+            page?: number;
+            active: boolean;
+          }>;
+          next_page_url: any;
+          path: string;
+          per_page: number;
+          prev_page_url: any;
+          to: number;
+          total: number;
+        };
+      }> => {
+        return howl("/dentist/active-projects?per_page=22");
+      },
+    });
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            Good morning, Dr. Martinez
+            Good morning, Dr. {me?.data?.user?.full_name || "Dentist"}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Here's what's happening with your cases.
@@ -194,9 +271,9 @@ export default function DashboardPage() {
         </div>
 
         <TabsContent value="active" className="space-y-3 mt-4">
-          {ACTIVE_PROJECTS.map((p) => (
+          {activeProjectsData?.data?.data.map((p) => (
             <Card
-              key={p.id}
+              key={p.project_number}
               className="bg-white border-border/60 shadow-sm hover:shadow-md transition-shadow"
             >
               <CardContent className="p-4">
@@ -204,27 +281,28 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-muted-foreground">
-                        {p.id}
+                        {p.project_number}
                       </span>
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full border ${p.statusColor}`}
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full border`}
                       >
-                        {p.status}
+                        {p.project_status}
                       </span>
                       <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                        {p.type}
+                        {p.service_name}
                       </span>
                     </div>
                     <p className="text-sm font-semibold text-foreground truncate">
-                      {p.title}
+                      {p.project_title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Designer: {p.designer} · Due: {p.due}
+                      Designer: {p.dentist_id} · Due:{" "}
+                      {new Date(p.updated_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-foreground">
-                      {p.price}
+                      ${p.service_price}
                     </p>
                     <Link
                       href={`/projects/${p.id}`}

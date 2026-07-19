@@ -11,6 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const BALANCE = 84.0;
 const MIN_WITHDRAWAL = 100;
@@ -44,7 +46,28 @@ const PAYOUT_INTERVALS = ["Manual Payout", "Weekly", "Bi-weekly", "Monthly"];
 export default function DesignerWalletPage() {
   const [amount, setAmount] = useState("");
   const [interval, setInterval] = useState("Manual Payout");
-  const canWithdraw = BALANCE >= MIN_WITHDRAWAL;
+
+  const { data: walletData, isPending } = useQuery({
+    queryKey: ["wakket-balance"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        accountId?: string;
+        livemode: boolean;
+        balance: {
+          available: number;
+          instant_available: number;
+          pending: number;
+          currency: string;
+        };
+      };
+    }> => {
+      return howl("/designer/get-wallet-balance");
+    },
+  });
+  const canWithdraw =
+    Number(walletData?.data.balance.available ?? 0) >= MIN_WITHDRAWAL;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-start">
@@ -59,7 +82,7 @@ export default function DesignerWalletPage() {
             </p>
             <div className="flex items-baseline gap-2">
               <p className="text-5xl font-bold text-white">
-                ${BALANCE.toFixed(2)}
+                ${Number(walletData?.data.balance.available ?? 0).toFixed(2)}
               </p>
               <span className="text-sm font-medium text-white/50">USD</span>
             </div>

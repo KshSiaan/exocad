@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
+import { useCookies } from "react-cookie";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -59,6 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDesigner = isDesignerRoute(pathname);
   const nav = isDesigner ? DESIGNER_NAV : DENTIST_NAV;
+  const [{ token }, , removeCookie] = useCookies(["token"]);
 
   return (
     <div className="portal-light min-h-screen bg-[#f0f2f5] flex">
@@ -124,13 +126,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Settings size={16} />
             Settings
           </Link> */}
-          <Link
-            href="/auth/login"
+          <Button
+            onClick={() => {
+              try {
+                removeCookie("token", { path: "/" });
+                window.location.href = "/";
+              } catch (e) {
+                console.error("Error removing cookie:", e);
+              }
+            }}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
           >
             <LogOut size={16} />
             Sign Out
-          </Link>
+          </Button>
         </div>
       </aside>
 
@@ -256,6 +265,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-500 focus:text-red-500"
+                  onClick={() => {
+                    try {
+                      removeCookie("token", { path: "/" });
+                      window.location.href = "/";
+                    } catch (e) {
+                      console.error("Error removing cookie:", e);
+                    }
+                  }}
                   asChild
                 >
                   <Link href="/auth/login">

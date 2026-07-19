@@ -89,7 +89,7 @@ export default function NewProjectPage() {
   const [selectedDesigner, setSelectedDesigner] = useState<number | null>(null);
   const [designerSearch, setDesignerSearch] = useState("");
   const [files, setFiles] = useState<string[]>([]);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [submitted, setSubmitted] = useState(false);
 
   const filteredDesigners = DESIGNERS.filter(
@@ -171,30 +171,30 @@ export default function NewProjectPage() {
 
       {/* Steps */}
       <div className="flex items-center gap-0">
-        {(["Case Details", "Choose Designer", "Upload Files"] as const).map(
-          (s, i) => {
-            const stepNum = (i + 1) as 1 | 2 | 3;
-            const done = step > stepNum;
-            const active = step === stepNum;
-            return (
-              <div key={s} className="flex items-center flex-1 last:flex-none">
-                <div className="flex items-center gap-2 shrink-0">
-                  <div
-                    className={`size-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${done ? "bg-emerald-500 text-white" : active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-                  >
-                    {done ? <CheckCircle size={14} /> : stepNum}
-                  </div>
-                  <span
-                    className={`text-sm font-medium hidden sm:block ${active ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {s}
-                  </span>
+        {(
+          ["Case Details", "Choose Designer", "Upload Files", "Review"] as const
+        ).map((s, i) => {
+          const stepNum = (i + 1) as 1 | 2 | 3 | 4;
+          const done = step > stepNum;
+          const active = step === stepNum;
+          return (
+            <div key={s} className="flex items-center flex-1 last:flex-none">
+              <div className="flex items-center gap-2 shrink-0">
+                <div
+                  className={`size-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${done ? "bg-emerald-500 text-white" : active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                >
+                  {done ? <CheckCircle size={14} /> : stepNum}
                 </div>
-                {i < 2 && <div className="flex-1 h-px bg-border mx-3" />}
+                <span
+                  className={`text-sm font-medium hidden sm:block ${active ? "text-foreground" : "text-muted-foreground"}`}
+                >
+                  {s}
+                </span>
               </div>
-            );
-          },
-        )}
+              {i < 3 && <div className="flex-1 h-px bg-border mx-3" />}
+            </div>
+          );
+        })}
       </div>
 
       {step === 1 && (
@@ -355,8 +355,15 @@ export default function NewProjectPage() {
           </CardContent>
         </Card>
       )}
-
       {step === 3 && (
+        <Card className="bg-white border-border/60 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base">Upload Scan Files</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4"></CardContent>
+        </Card>
+      )}
+      {step === 4 && (
         <Card className="bg-white border-border/60 shadow-sm">
           <CardHeader>
             <CardTitle className="text-base">Upload Scan Files</CardTitle>
