@@ -202,21 +202,19 @@ export default function DesignerDashboardPage() {
   });
   const { data: jobsData, isPending: isJobsPending } = useQuery({
     queryKey: ["designer-jobs"],
-    queryFn: async (): Promise<{
-      status: boolean;
-      message: string;
-      data: {
-        requested_jobs: number;
-        total_active_jobs: number;
-        total_completed_jobs: number;
-        total_earning: number;
-        total_payout: number;
-      };
-    }> => {
+    queryFn: async (): Promise<any> => {
       const res = await howl("/designer/active-jobs?per_page=12&page=1");
       return res as any;
     },
   });
+  const { data: completedJobsData, isPending: isCompletedJobsPending } =
+    useQuery({
+      queryKey: ["designer-completed-jobs"],
+      queryFn: async (): Promise<any> => {
+        const res = await howl("/designer/active-jobs?per_page=12&page=1");
+        return res as any;
+      },
+    });
 
   const STATS = [
     { label: "Requested Jobs", value: data?.data.requested_jobs || 0 },

@@ -213,6 +213,56 @@ export default function DashboardPage() {
         return howl("/dentist/active-projects?per_page=22");
       },
     });
+  const { data: completedProjectsData, isPending: isPendingCompletedProjects } =
+    useQuery({
+      queryKey: ["completed-projects"],
+      queryFn: async (): Promise<{
+        status: boolean;
+        message: string;
+        data: {
+          current_page: number;
+          data: Array<{
+            id: number;
+            project_number: string;
+            dentist_id: number;
+            project_title: string;
+            project_description: string;
+            designer_id: number;
+            service_name: string;
+            service_price: string;
+            project_status: string;
+            project_status_changed_at: string;
+            payment_status: string;
+            dentist_scan_files: Array<string>;
+            designer_submitted_files?: Array<string>;
+            designer_payout_status: any;
+            comments: any;
+            payment_type: string;
+            created_at: string;
+            updated_at: string;
+            deleted_at: any;
+          }>;
+          first_page_url: string;
+          from: number;
+          last_page: number;
+          last_page_url: string;
+          links: Array<{
+            url?: string;
+            label: string;
+            page?: number;
+            active: boolean;
+          }>;
+          next_page_url: any;
+          path: string;
+          per_page: number;
+          prev_page_url: any;
+          to: number;
+          total: number;
+        };
+      }> => {
+        return howl("/dentist/complete-projects?per_page=22");
+      },
+    });
 
   return (
     <div className="space-y-6">
@@ -318,9 +368,9 @@ export default function DashboardPage() {
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-3 mt-4">
-          {RECENT_COMPLETED.map((p) => (
+          {completedProjectsData?.data?.data.map((p) => (
             <Card
-              key={p.id}
+              key={p.project_number}
               className="bg-white border-border/60 shadow-sm hover:shadow-md transition-shadow"
             >
               <CardContent className="p-4">
@@ -328,32 +378,28 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-muted-foreground">
-                        {p.id}
+                        {p.project_number}
                       </span>
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={`star-${p.id}-${i}`}
-                            size={11}
-                            className={
-                              i < p.rating
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-muted-foreground/30"
-                            }
-                          />
-                        ))}
-                      </div>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full border`}
+                      >
+                        {p.project_status}
+                      </span>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {p.service_name}
+                      </span>
                     </div>
                     <p className="text-sm font-semibold text-foreground truncate">
-                      {p.title}
+                      {p.project_title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Designer: {p.designer} · Completed: {p.date}
+                      Designer: {p.dentist_id} · Due:{" "}
+                      {new Date(p.updated_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-foreground">
-                      {p.price}
+                      ${p.service_price}
                     </p>
                     <Link
                       href={`/projects/${p.id}`}

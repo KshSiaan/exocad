@@ -1,7 +1,9 @@
 "use client";
 
-import { Camera, CreditCard, Lock, Mail, Phone, User } from "lucide-react";
+import { Camera, Lock, Mail, Phone, User } from "lucide-react";
 import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,15 +17,116 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { howl } from "@/lib/api";
 
 const SECTIONS = [
   { id: "personal", label: "Personal Info", icon: User },
-  // { id: "billing", label: "Billing", icon: CreditCard },
   { id: "security", label: "Security", icon: Lock },
 ];
 
-export default function ProfilePage() {
+interface ProfileData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  timezone: string;
+}
+
+export default function ProfileSettingsPage() {
   const [activeSection, setActiveSection] = useState("personal");
+  const [formData, setFormData] = useState<ProfileData>({
+    firstName: "Brian",
+    lastName: "Martinez",
+    email: "brian.martinez@brightsmiles.com",
+    phone: "+1 (555) 234-5678",
+    timezone: "eastern",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [showPasswordErrors, setShowPasswordErrors] = useState(false);
+
+  // Save personal info
+  const saveProfileMutation = useMutation({
+    mutationFn: async () => {
+      return await howl("/personalization", {
+        method: "POST",
+        body: formData,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Profile updated successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to update profile");
+      console.error(error);
+    },
+  });
+
+  // Change password
+  const changePasswordMutation = useMutation({
+    mutationFn: async () => {
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        throw new Error("Passwords do not match");
+      }
+      if (passwordData.newPassword.length < 8) {
+        throw new Error("Password must be at least 8 characters");
+      }
+      return await howl("/change-password", {
+        method: "POST",
+        body: {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Password changed successfully");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setShowPasswordErrors(false);
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to change password",
+      );
+      setShowPasswordErrors(true);
+    },
+  });
+
+  const handleInputChange = (field: keyof ProfileData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePasswordChange = (
+    field: keyof typeof passwordData,
+    value: string,
+  ) => {
+    setPasswordData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validatePasswords = () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return false;
+    }
+    if (passwordData.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return false;
+    }
+    if (!passwordData.currentPassword) {
+      toast.error("Current password is required");
+      return false;
+    }
+    return true;
+  };
 
   return (
     <div className="space-y-6">
@@ -95,11 +198,23 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>First Name</Label>
-                    <Input defaultValue="Brian" className="h-10" />
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
+                      className="h-10"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Last Name</Label>
-                    <Input defaultValue="Martinez" className="h-10" />
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
+                      className="h-10"
+                    />
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -107,7 +222,10 @@ export default function ProfilePage() {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
-                      defaultValue="brian.martinez@brightsmiles.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       className="pl-10 h-10"
                     />
                   </div>
@@ -117,14 +235,22 @@ export default function ProfilePage() {
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
-                      defaultValue="+1 (555) 234-5678"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
                       className="pl-10 h-10"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Timezone</Label>
-                  <Select defaultValue="eastern">
+                  <Select
+                    value={formData.timezone}
+                    onValueChange={(value) =>
+                      handleInputChange("timezone", value)
+                    }
+                  >
                     <SelectTrigger className="h-10">
                       <SelectValue />
                     </SelectTrigger>
@@ -146,106 +272,18 @@ export default function ProfilePage() {
                   </Select>
                 </div>
                 <div className="flex justify-end">
-                  <Button>Save Changes</Button>
+                  <Button
+                    onClick={() => saveProfileMutation.mutate()}
+                    disabled={saveProfileMutation.isPending}
+                  >
+                    {saveProfileMutation.isPending
+                      ? "Saving..."
+                      : "Save Changes"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           )}
-          {/* {activeSection === "billing" && (
-            <Card className="bg-white border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Billing & Payment</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="rounded-xl border border-border/60 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="size-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        Visa •••• 4242
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Expires 08/2026
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-medium">
-                      Default
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 text-xs text-muted-foreground"
-                    >
-                      Replace
-                    </Button>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full gap-2">
-                  <CreditCard size={14} />
-                  Add New Payment Method
-                </Button>
-                <Separator />
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-3">
-                    Recent Invoices
-                  </h3>
-                  <div className="space-y-2">
-                    {[
-                      {
-                        id: "INV-2847",
-                        date: "Jun 7, 2024",
-                        amount: "$145.00",
-                        status: "Paid",
-                      },
-                      {
-                        id: "INV-2833",
-                        date: "Jun 1, 2024",
-                        amount: "$195.00",
-                        status: "Paid",
-                      },
-                      {
-                        id: "INV-2810",
-                        date: "May 28, 2024",
-                        amount: "$88.00",
-                        status: "Paid",
-                      },
-                    ].map((inv) => (
-                      <div
-                        key={inv.id}
-                        className="flex items-center justify-between py-2.5 border-b border-border/40 last:border-0"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            {inv.id}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {inv.date}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold text-foreground">
-                            {inv.amount}
-                          </span>
-                          <span className="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">
-                            {inv.status}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-muted-foreground"
-                          >
-                            PDF
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )} */}
 
           {activeSection === "security" && (
             <Card className="bg-white border-border/60 shadow-sm">
@@ -261,6 +299,13 @@ export default function ProfilePage() {
                       <Input
                         type="password"
                         placeholder="••••••••"
+                        value={passwordData.currentPassword}
+                        onChange={(e) =>
+                          handlePasswordChange(
+                            "currentPassword",
+                            e.target.value,
+                          )
+                        }
                         className="pl-10 h-10"
                       />
                     </div>
@@ -272,9 +317,19 @@ export default function ProfilePage() {
                       <Input
                         type="password"
                         placeholder="Min 8 characters"
+                        value={passwordData.newPassword}
+                        onChange={(e) =>
+                          handlePasswordChange("newPassword", e.target.value)
+                        }
                         className="pl-10 h-10"
                       />
                     </div>
+                    {passwordData.newPassword &&
+                      passwordData.newPassword.length < 8 && (
+                        <p className="text-xs text-red-600 mt-1">
+                          Password must be at least 8 characters
+                        </p>
+                      )}
                   </div>
                   <div className="space-y-1.5">
                     <Label>Confirm New Password</Label>
@@ -283,11 +338,36 @@ export default function ProfilePage() {
                       <Input
                         type="password"
                         placeholder="••••••••"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) =>
+                          handlePasswordChange(
+                            "confirmPassword",
+                            e.target.value,
+                          )
+                        }
                         className="pl-10 h-10"
                       />
                     </div>
+                    {passwordData.confirmPassword &&
+                      passwordData.newPassword !==
+                        passwordData.confirmPassword && (
+                        <p className="text-xs text-red-600 mt-1">
+                          Passwords do not match
+                        </p>
+                      )}
                   </div>
-                  <Button>Update Password</Button>
+                  <Button
+                    onClick={() => {
+                      if (validatePasswords()) {
+                        changePasswordMutation.mutate();
+                      }
+                    }}
+                    disabled={changePasswordMutation.isPending}
+                  >
+                    {changePasswordMutation.isPending
+                      ? "Updating..."
+                      : "Update Password"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

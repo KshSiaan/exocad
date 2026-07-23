@@ -393,17 +393,15 @@ export default function DesignerProfilePage() {
               ))}
             </nav>
             <Separator className="my-2" />
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs h-8 gap-1.5"
-              asChild
+            <a
+              href="/designers/1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 w-full text-xs h-8 px-4 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md"
             >
-              <a href="/designers/1" target="_blank" rel="noopener noreferrer">
-                <Eye size={12} />
-                Preview Profile
-              </a>
-            </Button>
+              <Eye size={12} />
+              Preview Profile
+            </a>
           </CardContent>
         </Card>
 
