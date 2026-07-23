@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { useCookies } from "react-cookie";
+import { howl } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -61,7 +63,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isDesigner = isDesignerRoute(pathname);
   const nav = isDesigner ? DESIGNER_NAV : DENTIST_NAV;
   const [{ token }, , removeCookie] = useCookies(["token"]);
-
+  const { data: me, isPending: mePending } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await howl("/get-profile");
+      return res as any;
+    },
+  });
   return (
     <div className="portal-light min-h-screen bg-[#f0f2f5] flex">
       {/* Sidebar */}
@@ -244,7 +252,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </Avatar>
                   <div className="text-left hidden sm:block">
                     <p className="text-sm font-semibold text-foreground leading-none">
-                      {isDesigner ? "Sarah Chen" : "Bright Smiles"}
+                      {me?.data?.user?.full_name || "Your Name"}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {isDesigner ? "CAD Designer" : "Dental Practice"}

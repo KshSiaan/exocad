@@ -1,7 +1,7 @@
 "use client";
 
 import { Camera, Lock, Mail, Phone, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,7 @@ const SECTIONS = [
 ];
 
 interface ProfileData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   timezone: string;
@@ -35,11 +34,10 @@ interface ProfileData {
 export default function ProfileSettingsPage() {
   const [activeSection, setActiveSection] = useState("personal");
   const [formData, setFormData] = useState<ProfileData>({
-    firstName: "Brian",
-    lastName: "Martinez",
-    email: "brian.martinez@brightsmiles.com",
-    phone: "+1 (555) 234-5678",
-    timezone: "eastern",
+    fullName: "",
+    email: "",
+    phone: "",
+    timezone: "Eastern (EST)",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -49,6 +47,27 @@ export default function ProfileSettingsPage() {
   });
 
   const [showPasswordErrors, setShowPasswordErrors] = useState(false);
+
+  const { data: me, isPending: mePending } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await howl("/get-profile");
+      return res as any;
+    },
+  });
+
+  useEffect(() => {
+    const user = me?.data?.user;
+
+    if (!user) return;
+
+    setFormData({
+      fullName: user.full_name ?? "",
+      email: user.email ?? "",
+      phone: user.profile?.phone ?? "",
+      timezone: user.timezone ?? "Eastern (EST)",
+    });
+  }, [me]);
 
   // Save personal info
   const saveProfileMutation = useMutation({
@@ -156,10 +175,10 @@ export default function ProfileSettingsPage() {
               </div>
               <div className="text-center">
                 <p className="text-sm font-semibold text-foreground">
-                  Dr. Brian Martinez
+                  {formData.fullName || "Your Name"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Bright Smiles Dental
+                  {formData.email || "your.email@example.com"}
                 </p>
               </div>
             </div>
@@ -195,27 +214,15 @@ export default function ProfileSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>First Name</Label>
-                    <Input
-                      value={formData.firstName}
-                      onChange={(e) =>
-                        handleInputChange("firstName", e.target.value)
-                      }
-                      className="h-10"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Last Name</Label>
-                    <Input
-                      value={formData.lastName}
-                      onChange={(e) =>
-                        handleInputChange("lastName", e.target.value)
-                      }
-                      className="h-10"
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label>Full Name</Label>
+                  <Input
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      handleInputChange("fullName", e.target.value)
+                    }
+                    className="h-10"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Email Address</Label>

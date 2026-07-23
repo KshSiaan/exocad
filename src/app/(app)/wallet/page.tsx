@@ -10,6 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
+import { ApiResponse } from "@/types/base";
 
 const BALANCE = { amount: "$1,240", label: "Available funds" };
 
@@ -51,6 +54,17 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function WalletPage() {
+  const { data: walletData } = useQuery({
+    queryKey: ["wallet"],
+    queryFn: (): Promise<
+      ApiResponse<{
+        wallet_balance: number;
+      }>
+    > => {
+      return howl("/dentist/get-wallet-balance");
+    },
+  });
+
   return (
     <div className="space-y-6">
       {/* Top cards */}
@@ -58,10 +72,14 @@ export default function WalletPage() {
         {/* Balance card */}
         <div className="sm:w-64 shrink-0 bg-white rounded-2xl border border-border/60 p-6 space-y-1">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Total Refundable Amount
+            Total Balance Amount
           </p>
-          <p className="text-4xl font-bold text-foreground">{BALANCE.amount}</p>
-          <p className="text-sm text-muted-foreground">{BALANCE.label}</p>
+          <p className="text-4xl font-bold text-foreground">
+            ${walletData?.data?.wallet_balance || "0.00"}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Available for withdrawal
+          </p>
         </div>
 
         {/* Refund request card */}
