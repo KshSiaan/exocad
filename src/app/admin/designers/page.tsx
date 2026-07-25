@@ -27,169 +27,88 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const DESIGNERS = [
-  {
-    initials: "SC",
-    name: "Sarah Chen",
-    email: "sarah.chen@exoconnect.io",
-    location: "🇺🇸 San Francisco",
-    specialties: ["Full Arch", "Implant Bars", "+1"],
-    plan: "Scale",
-    planColor: "text-emerald-500 border-emerald-500/30 bg-emerald-500/10",
-    cases: 248,
-    rating: 4.9,
-    status: "Active",
-    joined: "Jan 15, 2024",
-  },
-  {
-    initials: "MW",
-    name: "Marcus Weber",
-    email: "marcus.weber@exoconnect.io",
-    location: "🇩🇪 Berlin",
-    specialties: ["Veneers", "Crowns", "+1"],
-    plan: "Grow",
-    planColor: "text-blue-500 border-blue-500/30 bg-blue-500/10",
-    cases: 167,
-    rating: 4.7,
-    status: "Active",
-    joined: "Feb 3, 2024",
-  },
-  {
-    initials: "ER",
-    name: "Elena Rodriguez",
-    email: "elena.r@exoconnect.io",
-    location: "🇪🇸 Madrid",
-    specialties: ["Implant Bars", "Overdentures"],
-    plan: "Launch",
-    planColor: "text-muted-foreground border-border bg-muted",
-    cases: 89,
-    rating: 4.5,
-    status: "Active",
-    joined: "Mar 12, 2024",
-  },
-  {
-    initials: "JT",
-    name: "James Thompson",
-    email: "j.thompson@exoconnect.io",
-    location: "🇬🇧 London",
-    specialties: ["Full Arch", "Crowns", "+1"],
-    plan: "Scale",
-    planColor: "text-emerald-500 border-emerald-500/30 bg-emerald-500/10",
-    cases: 312,
-    rating: 3.8,
-    status: "Suspended",
-    joined: "Dec 8, 2023",
-  },
-  {
-    initials: "YT",
-    name: "Yuki Tanaka",
-    email: "yuki.t@exoconnect.io",
-    location: "🇯🇵 Tokyo",
-    specialties: ["Veneers", "Crowns", "+1"],
-    plan: "Grow",
-    planColor: "text-blue-500 border-blue-500/30 bg-blue-500/10",
-    cases: 203,
-    rating: 4.8,
-    status: "Active",
-    joined: "Jan 28, 2024",
-  },
-  {
-    initials: "AD",
-    name: "Amara Diallo",
-    email: "amara.d@exoconnect.io",
-    location: "🇫🇷 Paris",
-    specialties: ["Crowns", "Bridges", "+1"],
-    plan: "Grow",
-    planColor: "text-blue-500 border-blue-500/30 bg-blue-500/10",
-    cases: 134,
-    rating: 4.6,
-    status: "Active",
-    joined: "Apr 5, 2024",
-  },
-  {
-    initials: "KP",
-    name: "Kofi Patel",
-    email: "kofi.p@exoconnect.io",
-    location: "🇮🇳 Mumbai",
-    specialties: ["Full Arch", "Implant Bars"],
-    plan: "Launch",
-    planColor: "text-muted-foreground border-border bg-muted",
-    cases: 41,
-    rating: 4.2,
-    status: "Pending",
-    joined: "May 20, 2024",
-  },
-  {
-    initials: "LN",
-    name: "Lena Novak",
-    email: "lena.n@exoconnect.io",
-    location: "🇨🇿 Prague",
-    specialties: ["Veneers", "Overdentures"],
-    plan: "Grow",
-    planColor: "text-blue-500 border-blue-500/30 bg-blue-500/10",
-    cases: 178,
-    rating: 4.9,
-    status: "Active",
-    joined: "Feb 14, 2024",
-  },
-];
-
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  Active: {
-    label: "Active",
-    className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  },
-  Suspended: {
-    label: "Suspended",
-    className: "bg-red-500/10 text-red-500 border-red-500/20",
-  },
-  Pending: {
-    label: "Pending",
-    className: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  },
-};
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const TABS = [
   { label: "All", key: "all", count: 8 },
   { label: "Active", key: "Active", count: 6 },
   { label: "Suspended", key: "Suspended", count: 1 },
-  { label: "Pending", key: "Pending", count: 1 },
-];
-
-const STAT_CARDS = [
-  { label: "Total Designers", value: "8", sub: "+12 this month" },
-  {
-    label: "Active",
-    value: "6",
-    sub: "75% of total",
-    color: "text-emerald-500",
-  },
-  {
-    label: "Pending Review",
-    value: "1",
-    sub: "Awaiting approval",
-    color: "text-amber-500",
-  },
-  {
-    label: "Suspended",
-    value: "1",
-    sub: "Requires action",
-    color: "text-red-500",
-  },
 ];
 
 export default function DesignersPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
-
-  const filtered = DESIGNERS.filter((d) => {
-    const matchTab = activeTab === "all" || d.status === activeTab;
-    const matchSearch =
-      !search ||
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.email.toLowerCase().includes(search.toLowerCase());
-    return matchTab && matchSearch;
+  const [page, setPage] = useState(1);
+  const [levelFilter, setLevelFilter] = useState<string | null>(null);
+  const { data } = useQuery({
+    queryKey: ["designers", activeTab, search, page, levelFilter],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        current_page: number;
+        data: Array<{
+          id: number;
+          full_name: string;
+          role: string;
+          email: string;
+          email_verified_at: string;
+          status: string;
+          otp_verified_at: any;
+          otp: any;
+          otp_expires_at: any;
+          avatar: any;
+          stripe_connect_id: any;
+          is_trail_used: number;
+          google_id: any;
+          timezone: any;
+          login_status: number;
+          last_active: any;
+          created_at: string;
+          updated_at: string;
+          deleted_at: any;
+          avatar_url: string;
+          profile: {
+            id: number;
+            user_id: number;
+            professional_title: any;
+            specializations: any;
+            availability: boolean;
+            level: any;
+            bio: any;
+            clinic_name: any;
+            about_for_designer: any;
+            wallet_balance: string;
+            contact_email_address: any;
+            address: any;
+            phone_number: any;
+            created_at: string;
+            updated_at: string;
+          };
+        }>;
+        first_page_url: string;
+        from: number;
+        last_page: number;
+        last_page_url: string;
+        links: Array<{
+          url?: string;
+          label: string;
+          page?: number;
+          active: boolean;
+        }>;
+        next_page_url: any;
+        path: string;
+        per_page: number;
+        prev_page_url: any;
+        to: number;
+        total: number;
+      };
+    }> => {
+      return howl(
+        `/admin/get-users?role=DESIGNER&status=${activeTab === "all" ? "" : activeTab}&level=${levelFilter ?? ""}&per_page=12&page=${page}`,
+      );
+    },
   });
 
   return (
@@ -214,23 +133,6 @@ export default function DesignersPage() {
         </div>
       </div>
 
-      {/* Stat cards */}
-      {/* <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {STAT_CARDS.map((s) => (
-          <Card key={s.label} className="bg-card border-border">
-            <CardContent className="p-5">
-              <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p
-                className={`text-3xl font-bold mt-1 ${s.color ?? "text-foreground"}`}
-              >
-                {s.value}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">{s.sub}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div> */}
-
       {/* Table card */}
       <Card className="bg-card border-border">
         {/* Tabs + controls */}
@@ -248,7 +150,7 @@ export default function DesignersPage() {
                 }`}
               >
                 {t.label}
-                <span
+                {/* <span
                   className={`text-xs px-1.5 py-0.5 rounded-full ${
                     activeTab === t.key
                       ? "bg-background/20 text-background"
@@ -256,7 +158,7 @@ export default function DesignersPage() {
                   }`}
                 >
                   {t.count}
-                </span>
+                </span> */}
               </button>
             ))}
           </div>
@@ -292,15 +194,35 @@ export default function DesignersPage() {
                   className="h-9 gap-2 text-xs"
                 >
                   <SlidersHorizontal size={13} />
-                  All Plans
+                  Levels
                   <ChevronDown size={11} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
-                <DropdownMenuItem>All Plans</DropdownMenuItem>
-                <DropdownMenuItem>Scale</DropdownMenuItem>
-                <DropdownMenuItem>Grow</DropdownMenuItem>
-                <DropdownMenuItem>Launch</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLevelFilter(null)}>
+                  All Levels
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setLevelFilter("top_rated");
+                  }}
+                >
+                  Top Rated
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setLevelFilter("level_1");
+                  }}
+                >
+                  Level 1
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setLevelFilter("level_2");
+                  }}
+                >
+                  Level 2
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -322,9 +244,7 @@ export default function DesignersPage() {
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Plan
               </TableHead>
-              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Cases ↕
-              </TableHead>
+
               <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Rating ↕
               </TableHead>
@@ -338,8 +258,7 @@ export default function DesignersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((d) => {
-              const sc = STATUS_CONFIG[d.status];
+            {data?.data?.data?.map((d) => {
               return (
                 <TableRow
                   key={d.email}
@@ -349,12 +268,15 @@ export default function DesignersPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="size-9">
                         <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
-                          {d.initials}
+                          {d.full_name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="text-sm font-semibold text-foreground">
-                          {d.name}
+                          {d.full_name}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {d.email}
@@ -363,11 +285,11 @@ export default function DesignersPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {d.location}
+                    {d.profile?.address || "N/A"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 flex-wrap">
-                      {d.specialties.map((s) => (
+                      {d?.profile?.specializations?.map((s: any) => (
                         <span
                           key={s}
                           className="text-xs border border-border rounded px-2 py-0.5 text-foreground bg-muted"
@@ -379,13 +301,10 @@ export default function DesignersPage() {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`text-xs font-semibold border rounded px-2.5 py-0.5 ${d.planColor}`}
+                      className={`text-xs font-semibold border rounded px-2.5 py-0.5`}
                     >
-                      {d.plan}
+                      {d?.status}
                     </span>
-                  </TableCell>
-                  <TableCell className="text-sm font-medium text-foreground">
-                    {d.cases}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
@@ -394,20 +313,24 @@ export default function DesignersPage() {
                         className="fill-amber-400 text-amber-400"
                       />
                       <span className="text-sm font-medium text-foreground">
-                        {d.rating}
+                        {d.profile?.level ?? "N/A"}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${sc.className}`}
+                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${d.status === "Active" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500" : "bg-red-500/10 text-red-500 border-red-500"}`}
                     >
                       <span className="size-1.5 rounded-full bg-current" />
-                      {sc.label}
+                      {d.status}
                     </span>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {d.joined}
+                    {new Date(d.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -444,26 +367,51 @@ export default function DesignersPage() {
         </Table>
 
         {/* Pagination */}
+        {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            Showing 1–{filtered.length} of {DESIGNERS.length} designers
+            Showing {data?.data?.from ?? 0}–{data?.data?.to ?? 0} of{" "}
+            {data?.data?.total ?? 0} designers
           </p>
+
           <div className="flex items-center gap-1">
+            {/* Previous */}
             <Button
               variant="outline"
               size="sm"
               className="h-8 w-8 p-0 text-xs"
-              disabled
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               ‹
             </Button>
-            <Button size="sm" className="h-8 w-8 p-0 text-xs">
-              1
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-xs">
-              2
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-xs">
+
+            {/* Page Numbers */}
+            {Array.from(
+              { length: data?.data?.last_page ?? 1 },
+              (_, i) => i + 1,
+            ).map((pageNumber) => (
+              <Button
+                key={pageNumber}
+                size="sm"
+                variant={page === pageNumber ? "default" : "outline"}
+                className="h-8 w-8 p-0 text-xs"
+                onClick={() => setPage(pageNumber)}
+              >
+                {pageNumber}
+              </Button>
+            ))}
+
+            {/* Next */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 text-xs"
+              disabled={page === (data?.data?.last_page ?? 1)}
+              onClick={() =>
+                setPage((p) => Math.min(data?.data?.last_page ?? 1, p + 1))
+              }
+            >
               ›
             </Button>
           </div>

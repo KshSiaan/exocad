@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  PencilRuler,
   Search,
   Settings,
   UserCircle,
@@ -18,7 +19,7 @@ import {
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { notFound, usePathname } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Sidebar,
@@ -34,15 +35,18 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { howl } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { useCookies } from "react-cookie";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Designers", href: "/admin/designers", icon: Users },
   { label: "Dentists", href: "/admin/dentists", icon: UserCircle },
   { label: "Projects", href: "/admin/practices", icon: ClipboardList },
+  { label: "Services", href: "/admin/service", icon: PencilRuler },
   { label: "Disputes", href: "/admin/disputes", icon: AlertCircle },
   { label: "Messages", href: "/admin/messages", icon: MessageSquare },
-  // { label: "Files", href: "/admin/files", icon: FolderOpen },
   { label: "Reports", href: "/admin/reports", icon: BarChart3 },
   { label: "Wallet", href: "/admin/wallet", icon: Wallet },
   { label: "Subscriptions", href: "/admin/subscriptions", icon: CoinsIcon },
@@ -52,7 +56,7 @@ const NAV_ITEMS = [
 
 function AdminSidebar() {
   const pathname = usePathname();
-
+  const [cookies, , removeCookie] = useCookies(["token"]);
   return (
     <Sidebar className="border-r border-border">
       <SidebarHeader className="px-6 py-5 border-b border-border">
@@ -102,12 +106,19 @@ function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              onClick={() => {
+                try {
+                  removeCookie("token", { path: "/" });
+                  window.location.href = "/";
+                } catch (e) {
+                  console.error("Error removing cookie:", e);
+                }
+              }}
               asChild
               className="h-10 rounded-lg px-3 gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted font-medium"
             >
-              <Link href="/">
-                <LogOut size={16} />
-                <span>Logout</span>
+              <Link href="/auth/login">
+                <LogOut size={14} className="mr-2" /> Sign Out
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -175,6 +186,63 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { data, isPending } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        user: {
+          id: number;
+          full_name: string;
+          role: string;
+          email: string;
+          email_verified_at: string;
+          status: string;
+          otp_verified_at: any;
+          otp: any;
+          otp_expires_at: any;
+          avatar: any;
+          stripe_connect_id: any;
+          is_trail_used: number;
+          google_id: any;
+          timezone: any;
+          login_status: number;
+          last_active: any;
+          created_at: string;
+          updated_at: string;
+          deleted_at: any;
+          avatar_url: string;
+          profile: {
+            id: number;
+            user_id: number;
+            professional_title: any;
+            specializations: any;
+            availability: boolean;
+            level: any;
+            bio: any;
+            clinic_name: any;
+            about_for_designer: any;
+            wallet_balance: string;
+            contact_email_address: any;
+            address: any;
+            phone_number: any;
+            created_at: string;
+            updated_at: string;
+          };
+        };
+      };
+    }> => {
+      return howl("/get-profile");
+    },
+  });
+
+  if (isPending) {
+    return <div className="p-4 text-sm font-semibold">Checking..</div>;
+  }
+  if (!data?.data?.user?.role || data?.data?.user?.role !== "ADMIN") {
+    return notFound();
+  }
   return (
     <SidebarProvider>
       <div className="admin-light flex min-h-screen w-full bg-background">

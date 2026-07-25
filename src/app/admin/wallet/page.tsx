@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check, Clock, Search, ShieldAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,15 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-
-const STATS = [
-  { label: "STRIPE PENDING", value: "$24,500.00" },
-  { label: "STRIPE AVAILABLE", value: "$128,430.20" },
-  { label: "ADMIN PAYOUT BALANCE", value: "$15,200.00" },
-  { label: "TOTAL ADMIN PAYOUT", value: "$452,100.00" },
-];
 
 type RequestStatus = "Approved" | "Pending" | "Rejected";
 
@@ -233,6 +228,7 @@ function RequestTable({
             <TableCell className="pr-6 text-right">
               <div className="flex items-center justify-end gap-3">
                 <button
+                  type="button"
                   onClick={() => approve(r.uid)}
                   className="text-muted-foreground hover:text-emerald-600 transition-colors"
                   title="Approve"
@@ -240,6 +236,7 @@ function RequestTable({
                   <Check size={16} />
                 </button>
                 <button
+                  type="button"
                   onClick={() => reject(r.uid)}
                   className="text-muted-foreground hover:text-red-500 transition-colors"
                   title="Reject"
@@ -269,6 +266,68 @@ export default function WalletPage() {
       r.id.toLowerCase().includes(search.toLowerCase()) ||
       r.name.toLowerCase().includes(search.toLowerCase()),
   );
+  const { data, isPending } = useQuery({
+    queryKey: ["wallet-info"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        wallet_info: {
+          balance: {
+            livemode: boolean;
+            stripe_pending_amount: number;
+            stripe_available_amount: number;
+            currency: string;
+          };
+          wallet_balance: number;
+          total_payout: number;
+        };
+        commission_percentage: {
+          key: string;
+          value: number;
+          note: string;
+        };
+        min_payout_limit: {
+          key: string;
+          value: number;
+          note: string;
+        };
+      };
+    }> => {
+      return howl(`/admin/wallet-info`);
+    },
+  });
+  const { data: refundData, isPending: isRefundPending } = useQuery({
+    queryKey: ["refund-requests"],
+    queryFn: async () => {
+      return howl(`/admin/get-refund-requests`);
+    },
+  });
+  const { data: payoutData, isPending: isPayoutPending } = useQuery({
+    queryKey: ["payout-histories"],
+    queryFn: async () => {
+      return howl(`/admin/get-payout-histories`);
+    },
+  });
+
+  const STATS = [
+    {
+      label: "STRIPE PENDING",
+      value: `$${data?.data.wallet_info.balance.stripe_pending_amount.toLocaleString()}`,
+    },
+    {
+      label: "STRIPE AVAILABLE",
+      value: `$${data?.data.wallet_info.balance.stripe_available_amount.toLocaleString()}`,
+    },
+    {
+      label: "ADMIN PAYOUT BALANCE",
+      value: `$${data?.data.wallet_info.wallet_balance.toLocaleString()}`,
+    },
+    {
+      label: "TOTAL ADMIN PAYOUT",
+      value: `$${data?.data.wallet_info.total_payout.toLocaleString()}`,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -359,20 +418,94 @@ export default function WalletPage() {
       </div>
 
       {/* Table */}
-      <Card className="bg-card border-border">
-        <CardContent className="px-0 py-0">
-          <RequestTable
-            key={tab}
-            rows={filtered}
-            nameLabel={tab === "withdrawal" ? "Designer" : "Dentist"}
-          />
-          {filtered.length === 0 && (
-            <p className="text-center py-10 text-sm text-muted-foreground">
-              No requests found.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-2 gap-6">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Request Refund From Dentist</CardTitle>
+          </CardHeader>
+          <CardContent className="px-0 py-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="pl-6 text-xs font-medium text-muted-foreground">
+                    Request ID
+                  </TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Dentist
+                  </TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Amount
+                  </TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground pr-6 text-right">
+                    Action
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow
+                    key={r.uid}
+                    className="border-border hover:bg-muted/40"
+                  >
+                    <TableCell className="pl-6 text-sm font-medium text-foreground">
+                      {r.id}
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground">
+                      {r.name}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.amount}
+                    </TableCell>
+                    <TableCell>
+                      <StatusToggle status={"Approved"} />
+                    </TableCell>
+                    <TableCell className="pr-6 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() => approve(r.uid)}
+                          className="text-muted-foreground hover:text-emerald-600 transition-colors"
+                          title="Approve"
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => reject(r.uid)}
+                          className="text-muted-foreground hover:text-red-500 transition-colors"
+                          title="Reject"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Admin Payout Histories</CardTitle>
+          </CardHeader>
+          <CardContent className="px-0 py-0">
+            <RequestTable
+              key={tab}
+              rows={filtered}
+              nameLabel={tab === "withdrawal" ? "Designer" : "Dentist"}
+            />
+            {filtered.length === 0 && (
+              <p className="text-center py-10 text-sm text-muted-foreground">
+                No requests found.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

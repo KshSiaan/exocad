@@ -38,35 +38,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-
-const STATS = [
-  {
-    label: "TOTAL USERS",
-    value: "730",
-    sub: "Dentists: 450 / Designers: 280",
-    icon: Users,
-  },
-  {
-    label: "TOTAL REVENUE",
-    value: "$125,430",
-    sub: "Gross platform volume",
-    icon: DollarSign,
-  },
-  {
-    label: "PLATFORM EARNINGS",
-    value: "$24,086",
-    sub: "Total commission (20% avg)",
-    icon: TrendingUp,
-  },
-  {
-    label: "ACTIVE SUBSCRIBERS",
-    value: "1,240",
-    sub: "Current monthly plans",
-    icon: CreditCard,
-  },
-];
 
 const REVENUE_DATA = [
   { month: "Jan", revenue: 13000, commission: 2800 },
@@ -201,7 +176,106 @@ type ActivityEntry = (typeof ACTIVITY_LOG)[number];
 
 export default function AdminDashboardPage() {
   const [selected, setSelected] = useState<ActivityEntry | null>(null);
+  const { data: cards, isPending: cardsPending } = useQuery({
+    queryKey: ["admin-dashboard-card"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        users: {
+          total_users: number;
+          dentist: number;
+          designer: number;
+        };
+        total_revenue: number;
+        platform_earnings: number;
+        active_subscribers: number;
+      };
+    }> => {
+      return howl(`/admin/card-info`);
+    },
+  });
+  const { data: revenue, isPending: revenuePending } = useQuery({
+    queryKey: ["admin-dashboard-revenue"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        filter: string;
+        revenue_chart: Array<{
+          month: string;
+          value: number;
+        }>;
+        commission_chart: Array<{
+          month: string;
+          value: number;
+        }>;
+      };
+    }> => {
+      return howl(`/admin/revenue-commission-chart?filter=monthly `);
+    },
+  });
+  const { data, isPending } = useQuery({
+    queryKey: ["admin-dashboard-revenue"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        filter: string;
+        revenue_chart: Array<{
+          month: string;
+          value: number;
+        }>;
+        commission_chart: Array<{
+          month: string;
+          value: number;
+        }>;
+      };
+    }> => {
+      return howl(`/admin/get-recent-activities?per_page=5`);
+    },
+  });
 
+  const STATS = [
+    {
+      label: "TOTAL USERS",
+      value: cardsPending
+        ? "Loading..."
+        : `${cards?.data.users.total_users ?? 0}`,
+      sub: "Dentists: 450 / Designers: 280",
+      icon: Users,
+    },
+    {
+      label: "TOTAL REVENUE",
+      value: cardsPending
+        ? "Loading..."
+        : `$${(cards?.data.total_revenue ?? 0).toLocaleString()}`,
+      sub: "Gross platform volume",
+      icon: DollarSign,
+    },
+    {
+      label: "PLATFORM EARNINGS",
+      value: cardsPending
+        ? "Loading..."
+        : `$${(cards?.data.platform_earnings ?? 0).toLocaleString()}`,
+      sub: "Total commission (20% avg)",
+      icon: TrendingUp,
+    },
+    {
+      label: "ACTIVE SUBSCRIBERS",
+      value: cardsPending
+        ? "Loading..."
+        : `${cards?.data.active_subscribers ?? 0}`,
+      sub: "Current monthly plans",
+      icon: CreditCard,
+    },
+  ];
+  const chartData =
+    revenue?.data.revenue_chart.map((item, index) => ({
+      month: item.month,
+      revenue: item.value,
+      commission: revenue.data.commission_chart[index]?.value ?? 0,
+    })) ?? [];
   return (
     <div className="space-y-6">
       {/* ── Stat cards ─────────────────────────────────────────────────── */}
@@ -249,7 +323,7 @@ export default function AdminDashboardPage() {
             <div className="h-[280px] mt-6">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={REVENUE_DATA}
+                  data={chartData}
                   margin={{ top: 4, right: 4, left: -8, bottom: 0 }}
                 >
                   <defs>

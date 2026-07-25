@@ -33,6 +33,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const MONTHLY = [
   { month: "Jan", revenue: 28000, commissions: 4200, orders: 120 },
@@ -163,45 +165,90 @@ const TX_STATUS: Record<string, string> = {
   Refunded: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
-const KPI = [
-  {
-    label: "TOTAL REVENUE",
-    value: "$216,510",
-    change: "+15.3%",
-    icon: DollarSign,
-  },
-  {
-    label: "ACTIVE ORDERS",
-    value: "966",
-    change: "+12.1%",
-    icon: ShoppingBag,
-  },
-  {
-    label: "Avg. Order Value",
-    value: "$224",
-    change: "+2.8%",
-    icon: TrendingUp,
-  },
-  {
-    label: "COMMISSION EARNED",
-    value: "$216,510",
-    change: "+15.3%",
-    icon: DollarSign,
-  },
-  {
-    label: "DISPUTES / REFUNDS",
-    value: "$216,510",
-    change: "4",
-    icon: AlertCircleIcon,
-  },
-];
-
 const C = "#6b7280";
 const BORDER = "#e5e7eb";
 const CARD_BG = "#ffffff";
 const FG = "#111827";
 
 export default function ReportsPage() {
+  const { data, isPending } = useQuery({
+    queryKey: ["admin-reports-info"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        total_revenue: number;
+        active_orders: number;
+        releasable_amount: number;
+        releasable_amount_count: number;
+        commission_earned: number;
+        dispute: number;
+        dispute_count: number;
+      };
+    }> => {
+      return howl(`/admin/analysis-info`);
+    },
+  });
+  const { data: revenue, isPending: revenuePending } = useQuery({
+    queryKey: ["admin-dashboard-revenue"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        filter: string;
+        revenue_chart: Array<{
+          month: string;
+          value: number;
+        }>;
+        commission_chart: Array<{
+          month: string;
+          value: number;
+        }>;
+      };
+    }> => {
+      return howl(`/admin/revenue-commission-chart?filter=monthly `);
+    },
+  });
+  const chartData =
+    revenue?.data.revenue_chart.map((item, index) => ({
+      month: item.month,
+      revenue: item.value,
+      commission: revenue.data.commission_chart[index]?.value ?? 0,
+    })) ?? [];
+
+  const KPI = [
+    {
+      label: "TOTAL REVENUE",
+      value: `$${data?.data.total_revenue.toLocaleString() ?? "0"}`,
+      change: "",
+      icon: DollarSign,
+    },
+    {
+      label: "ACTIVE ORDERS",
+      value: `${data?.data.active_orders ?? "0"}`,
+      change: "",
+      icon: ShoppingBag,
+    },
+    {
+      label: "Releasable Amount",
+      value: `$${data?.data.releasable_amount.toLocaleString() ?? "0"}  `,
+      change: "",
+      icon: TrendingUp,
+    },
+    {
+      label: "COMMISSION EARNED",
+      value: `$${data?.data.commission_earned.toLocaleString() ?? "0"}`,
+      change: "",
+      icon: DollarSign,
+    },
+    {
+      label: "DISPUTES / REFUNDS",
+      value: `$${data?.data.dispute.toLocaleString() ?? "0"}`,
+      change: ``,
+      icon: AlertCircleIcon,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -218,7 +265,7 @@ export default function ReportsPage() {
             Export Report
           </Button> */}
           {/* Period selector */}
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+          {/* <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
             {["7d", "30d", "3m", "1y"].map((p, i) => (
               <button
                 key={p}
@@ -228,7 +275,7 @@ export default function ReportsPage() {
                 {p}
               </button>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -272,7 +319,7 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={230}>
-              <AreaChart data={MONTHLY}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="gr1" x1="0" y1="0" x2="0" y2="1">
                     <stop

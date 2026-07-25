@@ -23,6 +23,13 @@ import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { howl } from "@/lib/api";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const SECTIONS = [
   { id: "profile", label: "Public Profile", icon: Globe },
@@ -86,7 +93,11 @@ export default function DesignerProfilePage() {
     },
   });
 
-  const { data: servicesData, isPending: isServicesPending } = useQuery({
+  const {
+    data: servicesData,
+    isPending: isServicesPending,
+    refetch,
+  } = useQuery({
     queryKey: ["services"],
     queryFn: async (): Promise<{
       status: boolean;
@@ -133,6 +144,7 @@ export default function DesignerProfilePage() {
       toast.error(err.message ?? "Failed to complete this request");
     },
     onSuccess: (res: any) => {
+      refetch();
       toast.success(res.message ?? "Success!");
       queryClient.invalidateQueries({ queryKey: ["services"] });
     },
@@ -229,10 +241,30 @@ export default function DesignerProfilePage() {
     { id: "1", name: "Surgical Guide", price: "45.00" },
     { id: "2", name: "Crown & Bridge", price: "85.00" },
   ]);
-  const [newSvc, setNewSvc] = useState({ name: "", price: "" });
+  const [newSvc, setNewSvc] = useState({
+    service_id: "",
+    custom_price: "",
+    note: "",
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editVals, setEditVals] = useState({ name: "", price: "" });
-
+  const { data: adminServices, isPending: isAdminServicesPending } = useQuery({
+    queryKey: ["admin_services"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: Array<{
+        id: number;
+        name: string;
+        min_price: string;
+        usage_count: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+    }> => {
+      return howl(`/designer/get-admin-services`);
+    },
+  });
   // Load data from API when available
   useEffect(() => {
     if (data?.data?.user) {
@@ -270,18 +302,17 @@ export default function DesignerProfilePage() {
   };
 
   const addService = () => {
-    const name = newSvc.name.trim();
-    const price = parseFloat(newSvc.price);
-    if (!name || Number.isNaN(price) || price < 0) return;
+    const service_id = newSvc.service_id;
+    const custom_price = parseFloat(newSvc.custom_price);
+    if (!service_id || Number.isNaN(custom_price) || custom_price < 0) return;
 
     // Call API to create service
     createPlan({
-      service_id: Date.now(),
-      custom_price: price,
-      note: name,
+      service_id: parseInt(service_id, 10),
+      custom_price: custom_price,
+      note: newSvc.note,
     });
-
-    setNewSvc({ name: "", price: "" });
+    setNewSvc({ service_id: "", custom_price: "", note: "" });
   };
 
   const startEdit = (svc: Service) => {
@@ -316,7 +347,6 @@ export default function DesignerProfilePage() {
     deletePlan({
       service_id: parseInt(id, 10),
     });
-
     setServices((prev) => prev.filter((s) => s.id !== id));
   };
 
@@ -539,20 +569,39 @@ export default function DesignerProfilePage() {
                 <CardContent className="space-y-4">
                   {/* Add service row */}
                   <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
-                    <div className="grid grid-cols-[1fr_160px_auto] gap-3 items-end">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Service Name</Label>
-                        <Input
-                          value={newSvc.name}
-                          onChange={(e) =>
+                    <div className="grid grid-cols-5 gap-3 items-end">
+                      <div className="space-y-1.5 col-span-2">
+                        <Label className="text-xs">Service</Label>
+                        <Select
+                          value={newSvc.service_id}
+                          onValueChange={(val) =>
                             setNewSvc((prev) => ({
                               ...prev,
-                              name: e.target.value,
+                              service_id: val,
                             }))
                           }
-                          placeholder="e.g., Night Guard Design"
-                          className="h-10 bg-white"
-                        />
+                        >
+                          <SelectTrigger className="h-10! w-full">
+                            <SelectValue placeholder="Select a service" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {adminServices?.data
+                              ?.filter(
+                                (svc) =>
+                                  !services.some(
+                                    (s) => s.service_id === svc.id,
+                                  ),
+                              )
+                              .map((svc) => (
+                                <SelectItem
+                                  key={svc.id}
+                                  value={svc.id.toString()}
+                                >
+                                  {svc.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Price ($)</Label>
@@ -564,11 +613,11 @@ export default function DesignerProfilePage() {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={newSvc.price}
+                            value={newSvc.custom_price}
                             onChange={(e) =>
                               setNewSvc((prev) => ({
                                 ...prev,
-                                price: e.target.value,
+                                custom_price: e.target.value,
                               }))
                             }
                             placeholder="0.00"
@@ -576,11 +625,29 @@ export default function DesignerProfilePage() {
                           />
                         </div>
                       </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Note</Label>
+                        <div className="relative">
+                          <Input
+                            value={newSvc.note}
+                            onChange={(e) =>
+                              setNewSvc((prev) => ({
+                                ...prev,
+                                note: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter a note"
+                            className="h-10 bg-white"
+                          />
+                        </div>
+                      </div>
                       <Button
                         type="button"
                         onClick={addService}
                         disabled={
-                          !newSvc.name.trim() || !newSvc.price || isCreatingPlan
+                          !newSvc.service_id ||
+                          !newSvc.custom_price ||
+                          isCreatingPlan
                         }
                         className="h-10 px-4 text-sm shrink-0"
                       >

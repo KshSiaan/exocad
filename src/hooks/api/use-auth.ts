@@ -23,9 +23,9 @@ export function useLogin() {
           if(response.data?.user?.role === "DESIGNER"){
             navig.push("/designer/dashboard")
           }else if(response.data?.user?.role === "DENTIST"){
-            navig.push("/dentist/dashboard")
+            navig.push("/dashboard")
           }else if(response.data?.user?.role === "ADMIN"){
-            navig.push("/admin/dashboard")
+            navig.push("/admin")
           }
     }
   })
