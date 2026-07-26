@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery } from "@tanstack/react-query";
+import { howl } from "@/lib/api";
 
 const DESIGNERS = [
   {
@@ -89,8 +91,30 @@ export default function NewProjectPage() {
   const [selectedDesigner, setSelectedDesigner] = useState<number | null>(null);
   const [designerSearch, setDesignerSearch] = useState("");
   const [files, setFiles] = useState<string[]>([]);
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [submitted, setSubmitted] = useState(false);
+  const [title, setTitle] = useState("");
+  const [serviceType, setServiceType] = useState("");
+  const [caseNotes, setCaseNotes] = useState("");
+  const [paymentType, setPaymentType] = useState("");
+
+  const { data: adminServices, isPending: isAdminServicesPending } = useQuery({
+    queryKey: ["admin_services"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: Array<{
+        id: number;
+        name: string;
+        min_price: string;
+        usage_count: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+    }> => {
+      return howl(`/designer/get-admin-services`);
+    },
+  });
 
   const filteredDesigners = DESIGNERS.filter(
     (d) =>
@@ -172,9 +196,15 @@ export default function NewProjectPage() {
       {/* Steps */}
       <div className="flex items-center gap-0">
         {(
-          ["Case Details", "Choose Designer", "Upload Files", "Review"] as const
+          [
+            "Case Details",
+            "Choose Designer",
+            "Upload Files",
+            "Review",
+            "Submit",
+          ] as const
         ).map((s, i) => {
-          const stepNum = (i + 1) as 1 | 2 | 3 | 4;
+          const stepNum = (i + 1) as 1 | 2 | 3 | 4 | 5;
           const done = step > stepNum;
           const active = step === stepNum;
           return (
@@ -191,7 +221,7 @@ export default function NewProjectPage() {
                   {s}
                 </span>
               </div>
-              {i < 3 && <div className="flex-1 h-px bg-border mx-3" />}
+              {i < 4 && <div className="flex-1 h-px bg-border mx-3" />}
             </div>
           );
         })}
@@ -209,18 +239,20 @@ export default function NewProjectPage() {
                 <Input
                   placeholder="e.g. Crown & Bridge — Patient #2024"
                   className="h-10"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
                 <Label>Service Type</Label>
-                <Select>
+                <Select value={serviceType} onValueChange={setServiceType}>
                   <SelectTrigger className="h-10! w-full">
                     <SelectValue placeholder="Select service" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SERVICE_TYPES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
+                    {adminServices?.data?.map((s) => (
+                      <SelectItem key={s.id} value={s.id.toString()}>
+                        {s.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -232,6 +264,8 @@ export default function NewProjectPage() {
               <Textarea
                 placeholder="Describe the case — teeth involved, material, occlusion notes, patient considerations, etc."
                 className="min-h-[100px] resize-none"
+                value={caseNotes}
+                onChange={(e) => setCaseNotes(e.target.value)}
               />
             </div>
             <div className="flex justify-end">

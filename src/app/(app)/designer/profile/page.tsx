@@ -585,21 +585,14 @@ export default function DesignerProfilePage() {
                             <SelectValue placeholder="Select a service" />
                           </SelectTrigger>
                           <SelectContent>
-                            {adminServices?.data
-                              ?.filter(
-                                (svc) =>
-                                  !services.some(
-                                    (s) => s.service_id === svc.id,
-                                  ),
-                              )
-                              .map((svc) => (
-                                <SelectItem
-                                  key={svc.id}
-                                  value={svc.id.toString()}
-                                >
-                                  {svc.name}
-                                </SelectItem>
-                              ))}
+                            {adminServices?.data?.map((svc) => (
+                              <SelectItem
+                                key={svc.id}
+                                value={svc.id.toString()}
+                              >
+                                {svc.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
