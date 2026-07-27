@@ -143,7 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 console.error("Error removing cookie:", e);
               }
             }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
+            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
           >
             <LogOut size={16} />
             Sign Out

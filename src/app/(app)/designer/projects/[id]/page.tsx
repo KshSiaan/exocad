@@ -179,7 +179,9 @@ export default function DesignerProjectDetailPage({
             <CardTitle>Your Uploaded Files</CardTitle>
             <Dialog>
               <DialogTrigger asChild>
-                {data?.data?.project_status === "in_progress" && (
+                {["in_progress", "revision"].includes(
+                  data?.data?.project_status ?? "",
+                ) && (
                   <Button variant="outline" size="sm">
                     <UploadIcon /> Upload File
                   </Button>

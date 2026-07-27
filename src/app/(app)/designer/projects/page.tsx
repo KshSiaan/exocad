@@ -27,7 +27,7 @@ import ViewJob from "./view-job";
 import ActionJobReq from "./action-job-req";
 
 export default function DesignerProjectsPage() {
-  const [tab, setTab] = useState("in_progress");
+  const [tab, setTab] = useState("All");
   const [search, setSearch] = useState("");
   const {
     data: jobsData,
@@ -130,7 +130,7 @@ export default function DesignerProjectsPage() {
       };
     }> => {
       const res = await howl(
-        `/designer/get-jobs?per_page=12&page=1&project_status=${tab}&search=${search}`,
+        `/designer/get-jobs?per_page=12&page=1&project_status=${tab === "All" ? "" : tab}&search=${search}`,
       );
       return res as any;
     },
@@ -243,6 +243,7 @@ export default function DesignerProjectsPage() {
         <div className="p-4 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             {[
+              "All",
               "in_progress",
               "submitted",
               "revision",
