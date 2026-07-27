@@ -25,6 +25,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery } from "@tanstack/react-query";
 import { howl } from "@/lib/api";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import Designers from "./designers";
+import Paymentable from "./paymentable";
 
 const DESIGNERS = [
   {
@@ -90,29 +94,51 @@ const SOFTWARES = ["exocad", "3Shape", "Dental Wings", "No Preference"];
 export default function NewProjectPage() {
   const [selectedDesigner, setSelectedDesigner] = useState<number | null>(null);
   const [designerSearch, setDesignerSearch] = useState("");
-  const [files, setFiles] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[] | null>(null);
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [submitted, setSubmitted] = useState(false);
   const [title, setTitle] = useState("");
-  const [serviceType, setServiceType] = useState("");
   const [caseNotes, setCaseNotes] = useState("");
-  const [paymentType, setPaymentType] = useState("");
+  const [serviceID, setServiceID] = useState<number | null>(null);
+  const [serviceName, setServiceName] = useState<string | null>(null);
+  const [servicePrice, setServicePrice] = useState<string | null>(null);
 
-  const { data: adminServices, isPending: isAdminServicesPending } = useQuery({
-    queryKey: ["admin_services"],
+  const { data: designersData } = useQuery({
+    queryKey: ["designers"],
     queryFn: async (): Promise<{
       status: boolean;
       message: string;
       data: Array<{
         id: number;
-        name: string;
-        min_price: string;
-        usage_count: number;
-        created_at: string;
-        updated_at: string;
+        full_name: string;
+        role: string;
+        email: string;
+        status: string;
+        avatar: any;
+        avatar_url: string;
+        designer_service: Array<{
+          id: number;
+          designer_id: number;
+          service_id: number;
+          custom_price: string;
+          note: string;
+          created_at: string;
+          updated_at: string;
+        }>;
+        profile?: {
+          id: number;
+          user_id: number;
+          professional_title: any;
+          specializations: any;
+          availability: boolean;
+          address: any;
+          phone_number: any;
+          level: any;
+          bio: any;
+          contact_email_address: any;
+        };
       }>;
     }> => {
-      return howl(`/designer/get-admin-services`);
+      return howl(`/get-designers`);
     },
   });
 
@@ -125,56 +151,52 @@ export default function NewProjectPage() {
       ),
   );
 
-  const mockAddFile = () => {
-    setFiles((prev) => [...prev, `scan_patient_${Date.now()}.stl`]);
-  };
-
-  if (submitted) {
-    return (
-      <div className="mx-auto py-16 text-center space-y-5">
-        <div className="size-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto">
-          <CheckCircle size={32} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Project Submitted!
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Your project has been sent to the designer. You'll be notified once
-            they accept.
-          </p>
-        </div>
-        <div className="bg-muted/40 rounded-xl p-4 text-sm text-left space-y-2">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Project ID</span>
-            <span className="font-mono font-semibold">PRJ-1043</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Assigned to</span>
-            <span className="font-semibold">
-              {selectedDesigner
-                ? DESIGNERS.find((d) => d.id === selectedDesigner)?.name
-                : "Auto-assigned"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Status</span>
-            <span className="text-amber-600 font-medium">
-              Pending Acceptance
-            </span>
-          </div>
-        </div>
-        <div className="flex gap-3 justify-center">
-          <Button variant="outline" asChild>
-            <Link href="/projects">View All Projects</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/projects/PRJ-1043">Track Project</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // if (submitted) {
+  //   return (
+  //     <div className="mx-auto py-16 text-center space-y-5">
+  //       <div className="size-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto">
+  //         <CheckCircle size={32} />
+  //       </div>
+  //       <div>
+  //         <h2 className="text-2xl font-bold text-foreground">
+  //           Project Submitted!
+  //         </h2>
+  //         <p className="text-muted-foreground mt-2">
+  //           Your project has been sent to the designer. You'll be notified once
+  //           they accept.
+  //         </p>
+  //       </div>
+  //       <div className="bg-muted/40 rounded-xl p-4 text-sm text-left space-y-2">
+  //         <div className="flex justify-between">
+  //           <span className="text-muted-foreground">Project ID</span>
+  //           <span className="font-mono font-semibold">PRJ-1043</span>
+  //         </div>
+  //         <div className="flex justify-between">
+  //           <span className="text-muted-foreground">Assigned to</span>
+  //           <span className="font-semibold">
+  //             {selectedDesigner
+  //               ? DESIGNERS.find((d) => d.id === selectedDesigner)?.name
+  //               : "Auto-assigned"}
+  //           </span>
+  //         </div>
+  //         <div className="flex justify-between">
+  //           <span className="text-muted-foreground">Status</span>
+  //           <span className="text-amber-600 font-medium">
+  //             Pending Acceptance
+  //           </span>
+  //         </div>
+  //       </div>
+  //       <div className="flex gap-3 justify-center">
+  //         <Button variant="outline" asChild>
+  //           <Link href="/projects">View All Projects</Link>
+  //         </Button>
+  //         <Button asChild>
+  //           <Link href="/projects/PRJ-1043">Track Project</Link>
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">
@@ -201,7 +223,7 @@ export default function NewProjectPage() {
             "Choose Designer",
             "Upload Files",
             "Review",
-            "Submit",
+            "Pay & Submit",
           ] as const
         ).map((s, i) => {
           const stepNum = (i + 1) as 1 | 2 | 3 | 4 | 5;
@@ -233,7 +255,7 @@ export default function NewProjectPage() {
             <CardTitle className="text-base">Case Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1.5">
                 <Label>Project Title</Label>
                 <Input
@@ -243,7 +265,7 @@ export default function NewProjectPage() {
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
-              <div className="space-y-1.5">
+              {/* <div className="space-y-1.5">
                 <Label>Service Type</Label>
                 <Select value={serviceType} onValueChange={setServiceType}>
                   <SelectTrigger className="h-10! w-full">
@@ -257,7 +279,7 @@ export default function NewProjectPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
             </div>
             <div className="space-y-1.5">
               <Label>Case Notes</Label>
@@ -269,7 +291,9 @@ export default function NewProjectPage() {
               />
             </div>
             <div className="flex justify-end">
-              <Button onClick={() => setStep(2)}>Continue</Button>
+              <Button onClick={() => setStep(2)} disabled={!title.trim()}>
+                Continue
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -310,75 +334,22 @@ export default function NewProjectPage() {
                 No designers match your search.
               </p>
             )}
-            {filteredDesigners.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                onClick={() =>
-                  d.status === "Available" && setSelectedDesigner(d.id)
-                }
-                className={`w-full text-left rounded-xl border p-4 transition-all ${
-                  d.status !== "Available"
-                    ? "opacity-50 cursor-not-allowed border-border/40"
-                    : selectedDesigner === d.id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border/60 hover:border-primary/40 hover:bg-muted/40"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="size-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
-                    {d.name
-                      .split(" ")
-                      .map((w) => w[0])
-                      .join("")
-                      .slice(0, 2)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm text-foreground">
-                        {d.name}
-                      </p>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full ${d.status === "Available" ? "bg-emerald-50 text-emerald-600" : "bg-muted text-muted-foreground"}`}
-                      >
-                        {d.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Star className="size-3 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-medium text-foreground">
-                        {d.rating}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        ({d.reviews})
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {d.specializations.slice(0, 3).map((s) => (
-                        <span
-                          key={s}
-                          className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-foreground">
-                      {d.price}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {d.turnaround}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            ))}
-
-            <p className="text-xs text-muted-foreground text-center pt-2">
+            <div className="grid grid-cols-3 gap-3">
+              {designersData?.data?.map((d) => (
+                <Designers
+                  key={d.id}
+                  d={d}
+                  selectedDesigner={selectedDesigner}
+                  setSelectedDesigner={setSelectedDesigner}
+                  setServiceID={setServiceID}
+                  setServiceName={setServiceName}
+                  setServicePrice={setServicePrice}
+                />
+              ))}
+            </div>
+            {/* <p className="text-xs text-muted-foreground text-center pt-2">
               Or leave unselected and we'll match you automatically.
-            </p>
+            </p> */}
 
             <div className="flex justify-between pt-2">
               <Button variant="outline" onClick={() => setStep(1)}>
@@ -394,65 +365,301 @@ export default function NewProjectPage() {
           <CardHeader>
             <CardTitle className="text-base">Upload Scan Files</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4"></CardContent>
+          <CardContent className="space-y-4">
+            <div className=" rounded-lg p-4 ">
+              {selectedFiles && selectedFiles.length > 0 ? (
+                <ul className="space-y-2">
+                  {selectedFiles.map((file, index) => (
+                    <li
+                      // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                      key={index}
+                      className="flex items-center gap-2 justify-between"
+                    >
+                      <span className="text-xs line-clamp-1 text-muted-foreground">
+                        {file.name}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedFiles(
+                            (prevFiles) =>
+                              prevFiles?.filter((_, i) => i !== index) || null,
+                          );
+                        }}
+                      >
+                        <XIcon />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Input
+                  type="file"
+                  className="w-full"
+                  multiple
+                  onChange={(e) =>
+                    setSelectedFiles(Array.from(e.target.files || []))
+                  }
+                />
+              )}
+            </div>
+            <div className="flex justify-between pt-2">
+              <Button variant="outline" onClick={() => setStep(2)}>
+                Back
+              </Button>
+              <Button onClick={() => setStep(4)}>Continue</Button>
+            </div>
+          </CardContent>
         </Card>
       )}
       {step === 4 && (
         <Card className="bg-white border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">Upload Scan Files</CardTitle>
+            <CardTitle className="text-lg">Review Your Project</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Review everything carefully before continuing to payment.
+            </p>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Drop zone */}
-            <button
-              type="button"
-              className="w-full border-2 border-dashed border-border/60 rounded-xl p-10 text-center hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
-              onClick={mockAddFile}
-            >
-              <Upload className="size-8 text-muted-foreground mx-auto mb-3" />
-              <p className="font-medium text-sm text-foreground">
-                Drop files here or click to upload
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                STL, OBJ, DCM, ZIP — Max 500 MB per file
-              </p>
-            </button>
 
-            {files.length > 0 && (
-              <div className="space-y-2">
-                {files.map((f, i) => (
-                  <div
-                    key={f}
-                    className="flex items-center justify-between bg-muted/40 rounded-lg px-4 py-2.5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="size-8 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
-                        STL
-                      </div>
-                      <span className="text-sm font-medium text-foreground">
-                        {f}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFiles((prev) => prev.filter((_, j) => j !== i))
-                      }
-                      className="text-muted-foreground hover:text-red-500 transition-colors"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
+          <CardContent className="space-y-6">
+            {/* Project Details */}
+            <div className="rounded-xl border bg-muted/30 p-5">
+              <h3 className="font-semibold mb-4">Project Details</h3>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <div>
+                  <p className="text-xs text-muted-foreground">Project Title</p>
+                  <p className="font-medium mt-1">{title}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Service</p>
+                  <p className="font-medium mt-1">
+                    {serviceName ?? "Not selected"}
+                  </p>
+                </div>
               </div>
-            )}
 
-            <div className="flex justify-between pt-2">
-              <Button variant="outline" onClick={() => setStep(2)}>
+              <div className="mt-5">
+                <p className="text-xs text-muted-foreground mb-2">Case Notes</p>
+
+                <div className="rounded-lg border bg-background p-4 whitespace-pre-wrap text-sm leading-6">
+                  {caseNotes ? (
+                    caseNotes
+                  ) : (
+                    <span className="italic text-muted-foreground">
+                      No case notes provided.
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Designer */}
+            <div className="rounded-xl border bg-muted/30 p-5">
+              <h3 className="font-semibold mb-4">Assigned Designer</h3>
+
+              {selectedDesigner ? (
+                (() => {
+                  const designer = designersData?.data?.find(
+                    (d) => d.id === selectedDesigner,
+                  );
+
+                  return (
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="flex gap-4">
+                        <Avatar className="size-14">
+                          <AvatarImage
+                            src={designer?.avatar_url || undefined}
+                          />
+                          <AvatarFallback>
+                            {designer?.full_name
+                              ?.split(" ")
+                              .map((w) => w[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div>
+                          <h4 className="font-semibold text-base">
+                            {designer?.full_name}
+                          </h4>
+
+                          <p className="text-sm text-muted-foreground">
+                            {designer?.profile?.professional_title ||
+                              "Dental CAD Designer"}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {designer?.profile?.specializations?.map(
+                              (item: string) => (
+                                <span
+                                  key={item}
+                                  className="rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs"
+                                >
+                                  {item}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div
+                          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                            designer?.status === "Active"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {designer?.status}
+                        </div>
+
+                        <p className="mt-4 text-xs text-muted-foreground">
+                          Service Price
+                        </p>
+
+                        <p className="text-xl font-bold">
+                          ${servicePrice ?? "--"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="rounded-lg border border-dashed p-5">
+                  <h4 className="font-medium">Automatic Assignment</h4>
+
+                  <p className="text-sm text-muted-foreground mt-1">
+                    We'll automatically assign your project to the most suitable
+                    available designer.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Files */}
+            <div className="rounded-xl border bg-muted/30 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">Uploaded Files</h3>
+
+                <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-medium">
+                  {selectedFiles?.length ?? 0}{" "}
+                  {(selectedFiles?.length ?? 0) === 1 ? "File" : "Files"}
+                </span>
+              </div>
+
+              {selectedFiles?.length ? (
+                <>
+                  <div className="space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <div
+                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                        key={index}
+                        className="rounded-lg border bg-background px-4 py-3 flex items-center justify-between"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{file.name}</p>
+
+                          <p className="text-xs text-muted-foreground">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+
+                        <CheckCircle className="size-5 text-emerald-500" />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-between mt-4 text-sm text-muted-foreground">
+                    <span>Total Upload Size</span>
+
+                    <span>
+                      {(
+                        selectedFiles.reduce((sum, f) => sum + f.size, 0) /
+                        1024 /
+                        1024
+                      ).toFixed(2)}{" "}
+                      MB
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-lg border border-dashed bg-background py-10 text-center text-muted-foreground">
+                  No files uploaded.
+                </div>
+              )}
+            </div>
+
+            {/* Pricing */}
+            <div className="rounded-xl border p-5">
+              <h3 className="font-semibold mb-4">Pricing Summary</h3>
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {serviceName ?? "Service"}
+                  </span>
+
+                  <span>${servicePrice ?? "0.00"}</span>
+                </div>
+
+                <div className="border-t pt-4 flex justify-between font-semibold text-lg">
+                  <span>Total</span>
+
+                  <span>${servicePrice ?? "0.00"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 flex items-center justify-between">
+              <div>
+                <p className="font-semibold">Ready to continue?</p>
+
+                <p className="text-sm text-muted-foreground">
+                  You'll complete your payment securely in the next step.
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Amount Due</p>
+
+                <p className="text-2xl font-bold">${servicePrice ?? "0.00"}</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(3)}>
                 Back
               </Button>
-              <Button onClick={() => setSubmitted(true)}>Submit Project</Button>
+
+              <Button className="min-w-[220px]" onClick={() => setStep(5)}>
+                Continue to Payment
+              </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === 5 && (
+        <Card>
+          <CardContent>
+            <Paymentable
+              dataset={{
+                title,
+                caseNotes,
+                serviceID,
+                serviceName,
+                servicePrice,
+                selectedDesigner,
+                selectedFiles,
+              }}
+            />
           </CardContent>
         </Card>
       )}

@@ -13,39 +13,18 @@ import {
 } from "lucide-react";
 import { use, useState } from "react";
 import { Button } from "@/components/ui/button";
-
-const PROJECT = {
-  name: "Project name",
-  title: "UPPER CROWN ALIGNMENT",
-  status: "Pending",
-  designer: { name: "Marcus Webb", role: "CAD Designer", initials: "MW" },
-};
-
-const SCAN_FILES = [
-  { name: "prescription.pdf", size: "1.1 MB" },
-  { name: "prescription.pdf", size: "1.1 MB" },
-  { name: "prescription.pdf", size: "1.1 MB" },
-];
-
-const MESSAGES = [
-  {
-    id: 1,
-    from: "designer",
-    text: "Hi, I have reviewed the case guidelines. The alignment layout looks standard.",
-    time: "10:14 AM",
-  },
-  {
-    id: 2,
-    from: "me",
-    text: "Perfect! Please note that the marginal width should not exceed 0.5mm.",
-    time: "10:30 AM",
-  },
-];
-
-const DESIGNER_FILES = [
-  { name: "crown_alignment_v1.stl", size: "4.2 MB", time: "Today, 08:30 AM" },
-  { name: "upper_arch_scan.stl", size: "6.8 MB", time: "Yesterday, 03:15 PM" },
-];
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { base_url, howl } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const LIFECYCLE = [
   {
@@ -73,8 +52,110 @@ export default function ProjectDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  use(params);
-  const [message, setMessage] = useState("");
+  const { id } = use(params);
+  const [disputeDetails, setDisputeDetails] = useState("");
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [resubmitDetails, setResubmitDetails] = useState("");
+  const [resubmitModalOpen, setResubmitModalOpen] = useState(false);
+  const { data, refetch } = useQuery({
+    queryKey: ["project"],
+    queryFn: async (): Promise<{
+      status: boolean;
+      message: string;
+      data: {
+        id: number;
+        project_number: string;
+        dentist_id: number;
+        project_title: string;
+        project_description: string;
+        designer_id: number;
+        service_name: string;
+        service_price: string;
+        project_status: string;
+        project_status_changed_at: string;
+        payment_status: string;
+        dentist_scan_files: Array<string>;
+        designer_submitted_files: Array<string>;
+        designer_payout_status: any;
+        comments: any;
+        payment_type: string;
+        created_at: string;
+        updated_at: string;
+        deleted_at: any;
+        designer: {
+          id: number;
+          full_name: string;
+          email: string;
+          role: string;
+          status: string;
+          avatar_url: string;
+        };
+        dentist: {
+          id: number;
+          full_name: string;
+          email: string;
+          role: string;
+          status: string;
+          avatar_url: string;
+        };
+      };
+    }> => {
+      return howl(`/dentist/view-project/${id}`);
+    },
+  });
+  const { mutate: createDispute, isPending: isCreatingDispute } = useMutation({
+    mutationKey: ["dispute_create"],
+    mutationFn: () => {
+      return howl(`/dentist/dispute-project?project_id=${id}`, {
+        method: "PATCH",
+        body: {
+          comments: disputeDetails,
+        },
+      });
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to complete this request");
+    },
+    onSuccess: (res: any) => {
+      setDisputeModalOpen(false);
+      setDisputeDetails("");
+      refetch();
+      toast.success(res.message ?? "Success!");
+    },
+  });
+  const { mutate: createRevision, isPending: isCreatingRevision } = useMutation(
+    {
+      mutationKey: ["revision_create"],
+      mutationFn: () => {
+        return howl(`/dentist/send-revision?project_id=${id}`, {
+          method: "PATCH",
+          body: {
+            comments: resubmitDetails,
+          },
+        });
+      },
+      onError: (err) => {
+        toast.error(err.message ?? "Failed to complete this request");
+      },
+      onSuccess: (res: any) => {
+        setResubmitModalOpen(false);
+        setResubmitDetails("");
+        refetch();
+        toast.success(res.message ?? "Success!");
+      },
+    },
+  );
+
+  const PROJECT = {
+    name: data?.data?.service_name || "Service Name",
+    title: data?.data?.project_title || "Project Title",
+    status: data?.data?.project_status || "N/A",
+    designer: {
+      name: data?.data?.designer?.full_name || "Unknown Designer",
+      role: data?.data?.designer ? "Assigned Designer" : "Unassigned",
+      initials: "MW",
+    },
+  };
 
   return (
     <div className="-m-6 flex flex-col lg:flex-row lg:overflow-hidden lg:h-[calc(100dvh-70px)]">
@@ -126,35 +207,38 @@ export default function ProjectDetailPage({
             Your Scan Files
           </p>
           <div className="space-y-2">
-            {SCAN_FILES.map((f, i) => (
+            {data?.data?.dentist_scan_files?.map((f, i) => (
               <div
-                key={`${f.name}-${i}-${f.size}`}
+                key={`${f}-${
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                  i
+                }`}
                 className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2.5"
               >
                 <div className="flex items-center gap-2.5">
                   <FileText size={18} className="text-rose-500 shrink-0" />
                   <div>
-                    <p className="text-xs font-medium text-foreground">
-                      {f.name}
+                    <p className="text-xs line-clamp-2 font-medium text-foreground">
+                      {f.split("/").pop()}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {f.size}
+                      {/* {f??"n/a"} */}
                     </p>
                   </div>
                 </div>
-                <button
+                {/* <button
                   type="button"
                   className="text-rose-400 hover:text-rose-600 transition-colors"
                 >
                   <Trash2 size={14} />
-                </button>
+                </button> */}
               </div>
             ))}
           </div>
         </div>
 
         {/* Upload zone — compact */}
-        <div className="px-4 pb-4">
+        {/* <div className="px-4 pb-4">
           <div className="border border-dashed border-border/60 rounded-xl px-3 py-2.5 flex items-center gap-3 cursor-pointer hover:bg-muted/20 transition-colors">
             <div className="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
               <Upload size={14} className="text-muted-foreground" />
@@ -168,7 +252,7 @@ export default function ProjectDetailPage({
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Designer submitted files */}
         <div className="px-4 pb-5 border-t border-border/60 pt-4">
@@ -176,28 +260,32 @@ export default function ProjectDetailPage({
             Designer Submitted Files
           </p>
           <div className="space-y-2">
-            {DESIGNER_FILES.map((f, i) => (
+            {data?.data?.designer_submitted_files?.map((f, i) => (
               <div
-                key={`df-${f.name}-${i}`}
+                key={`df-${f}-${
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                  i
+                }`}
                 className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2.5"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <FileText size={16} className="text-primary shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">
-                      {f.name}
+                    <p className="text-xs font-medium text-foreground truncate line-clamp-2">
+                      {f.split("/").pop()}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    {/* <p className="text-[10px] text-muted-foreground">
                       {f.size} · {f.time}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
-                <button
-                  type="button"
+                <a
+                  href={base_url + f}
                   className="text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-2"
+                  download
                 >
                   <Download size={13} />
-                </button>
+                </a>
               </div>
             ))}
           </div>
@@ -215,8 +303,8 @@ export default function ProjectDetailPage({
         </div>
 
         {/* Collaboration box */}
-        <div className="bg-white border-t border-border/60 flex flex-col">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border/60">
+        {/*<div className="bg-white border-t border-border/60 flex flex-col">
+           <div className="flex items-center gap-2 px-5 py-3 border-b border-border/60">
             <MessageCircle size={15} className="text-muted-foreground" />
             <span className="text-sm font-semibold text-foreground">
               Designer Collaboration Box
@@ -252,8 +340,6 @@ export default function ProjectDetailPage({
           <div className="flex items-center gap-3 px-5 py-3 border-t border-border/60">
             <input
               type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
               placeholder="Type instructions or chat with designer..."
               className="flex-1 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
             />
@@ -264,7 +350,7 @@ export default function ProjectDetailPage({
               Send
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Right panel — actions + lifecycle */}
@@ -275,22 +361,83 @@ export default function ProjectDetailPage({
         </Button>
 
         <div className="grid grid-cols-1 gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 gap-1 text-[11px] h-8 px-2"
-          >
-            <RotateCcw size={11} />
-            Send Revision
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 gap-1 text-[11px] h-8 px-2 border-amber-400! text-amber-600! hover:bg-amber-50!"
-          >
-            <AlertTriangle size={11} />
-            Dispute Case
-          </Button>
+          {["resubmitted", "submitted"].includes(
+            data?.data?.project_status ?? "",
+          ) && (
+            <Dialog
+              open={resubmitModalOpen}
+              onOpenChange={setResubmitModalOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-1 text-[11px] h-8 px-2"
+                >
+                  <RotateCcw size={11} />
+                  Send Revision
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Send Revision</DialogTitle>
+                </DialogHeader>
+                <div className="">
+                  <Textarea
+                    placeholder="Enter revision details..."
+                    value={resubmitDetails}
+                    onChange={(e) => setResubmitDetails(e.target.value)}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    size="lg"
+                    onClick={() => createRevision()}
+                    disabled={isCreatingRevision}
+                  >
+                    Submit Revision
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+          {["in_progress", "submitted", "revision", "resubmitted"].includes(
+            data?.data?.project_status ?? "",
+          ) && (
+            <Dialog open={disputeModalOpen} onOpenChange={setDisputeModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-1 text-[11px] h-8 px-2 border-amber-400! text-amber-600! hover:bg-amber-50!"
+                >
+                  <AlertTriangle size={11} />
+                  Dispute Case
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Dispute Case</DialogTitle>
+                </DialogHeader>
+                <div className="">
+                  <Textarea
+                    placeholder="Enter dispute details..."
+                    value={disputeDetails}
+                    onChange={(e) => setDisputeDetails(e.target.value)}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    size="lg"
+                    onClick={() => createDispute()}
+                    disabled={isCreatingDispute}
+                  >
+                    Submit Dispute
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         <div className="pt-2">
